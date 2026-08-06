@@ -1,42 +1,68 @@
-# Nice group project template
+# Movies API
 
-✅ The `main` branch is protected: pushes and force pushes are disabled, but pull requests are allowed.
+Example REST API for managing a movie database. Built with Go & SQLite.
 
-✅ Pull requests require a minimum of 1 approval (though the repository owner can merge without approval).
+## Features
 
-✅ Merging is blocked if changes are requested: even with sufficient approvals, a PR cannot be merged if reviewers have requested changes.
+* CRUD operations
+* Search and filtering
+* Pagination
+* SQLite persistence
+* Input validation
 
-✅ Pre-commit hook is included.
+## Project Structure
 
-✅ Allowlist gitignore for whitelist-style adepts 
+See [docs/project-structure.md](docs/project-structure.md) for a detailed explanation of the project layout.
 
-❗ Make sure to select checkboxes `Branch Protection` and `Git content (default branch)` when creating a new repo using this template.
+## Getting Started
 
-## About pre-commit hooks
+### Prerequisites
 
-A pre-commit hook is a script that runs automatically **before** a Git commit is finalized. It typically checks your changes (e.g., linting, tests, formatting) and can block the commit if issues are detected.
+* Go 1.26+
 
-The hook included in this repository template allows you to:
+### Installation
 
-1. [Format](https://pkg.go.dev/cmd/go/internal/fmtcmd) staged `.go` files.
-2. Run [`go vet`](https://pkg.go.dev/cmd/vet) on all Go files in the repository, including those in nested folders.
+Clone the repository:
 
----
-
-## Install the pre-commit hook (optional)
-
-Git **never** runs hooks from a freshly cloned repository. Each team member must opt in manually:
-
-```sh
-make init
+```bash
+git clone https://gitea.kood.tech/jerejuhanimeskanen/movies-api.git
+cd movies-api
 ```
 
-This command runs `git config core.hooksPath .githooks` to inform Git about the new location for hooks, **instead of** the default `.git/hooks/`.
+Install the project dependencies:
 
-If no `.go` files are staged, the hook does nothing.
-
-To bypass the hook for a single commit, use:
-
-```sh
-git commit --no-verify
+```bash
+go mod download
 ```
+
+### Running the Application
+
+Start the API server:
+
+```bash
+go run ./cmd/api/main.go
+```
+
+The server will be available at:
+
+```text
+http://localhost:8080
+```
+
+The application uses SQLite through the `github.com/mattn/go-sqlite3` driver. The database file is created automatically if it does not already exist.
+
+## Documentation
+
+Additional documentation is available in the `docs/` directory:
+
+* `architecture.md` – Overview of the application architecture and request lifecycle.
+* `api.md` – API endpoints, request and response formats, and status codes.
+* `project-structure.md` – Explanation of the project layout and package responsibilities.
+
+## Testing
+
+A Postman collection is included in the `postman/` directory for testing all available endpoints.
+
+## License
+
+This project is licensed under the MIT License.
