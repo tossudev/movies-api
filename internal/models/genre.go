@@ -1,3 +1,6 @@
 package models
 
-type Genre struct{}
+type Genre struct {
+	ID   int
+	Name string
+}
