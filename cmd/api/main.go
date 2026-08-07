@@ -22,6 +22,14 @@ func main() {
 	}
 
 	handler := routes.New(database)
+	// movies, err := repository.GetAllMovies(database)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// for _, m := range movies {
+	// 	fmt.Println(m.Title)
+	// }
 
 	log.Printf("Server listening on %s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(cfg.ServerPort, handler))

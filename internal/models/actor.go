@@ -1,3 +1,7 @@
 package models
 
-type Actor struct{}
+type Actor struct {
+	ID        int
+	Name      string
+	BirthDate string
+}
