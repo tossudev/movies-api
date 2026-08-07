@@ -6,19 +6,19 @@ Actor (fields: id, name, birth_date)
 */
 
 CREATE TABLE genre (
-	id INT AUTO INCREMENT PRIMARY KEY	NOT NULL,
+	id INT PRIMARY KEY	NOT NULL,
 	name TEXT							NOT NULL
 );
 
 CREATE TABLE movie (
-	id INT AUTO INCREMENT PRIMARY KEY	NOT NULL,
+	id INT PRIMARY KEY	NOT NULL,
 	title TEXT							NOT NULL,
 	release_year TEXT					NOT NULL,
 	duration TEXT						NOT NULL
 );
 
 CREATE TABLE actor (
-	id INT AUTO INCREMENT PRIMARY KEY	NOT NULL,
+	id INT PRIMARY KEY	NOT NULL,
 	name TEXT							NOT NULL,
 	birth_date TEXT						NOT NULL
 );
@@ -34,4 +34,3 @@ CREATE TABLE movie_actors (
 	actor_id INT NOT NULL,
 	PRIMARY KEY (movie_id, actor_id)
 );
-
