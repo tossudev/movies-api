@@ -15,9 +15,11 @@
 !go.sum
 !go.mod
 
-!README.md
-!LICENSE
+!*.md
+!*.sql
+!*.db
 
+!LICENSE
 !Makefile
 !.githooks/pre-commit
 
