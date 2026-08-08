@@ -22,11 +22,13 @@ func main() {
 	}
 
 	handler := routes.New(database)
-	// movies, err := repository.GetAllMovies(database)
+
+	// ! [TESTING FUNCTIONALITY]:
+	// movieRepo := repository.NewMovieRepository(database)
+	// movies, err := movieRepo.GetAll()
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-
 	// for _, m := range movies {
 	// 	fmt.Println(m.Title)
 	// }
