@@ -69,3 +69,40 @@ func (r *GenreRepository) Delete(id int) error {
 
 	return err
 }
+
+func (r *GenreRepository) CreateRelationship(genreID, movieID int) error {
+	query := "INSERT INTO movie_genres VALUES (?, ?)"
+	_, err := r.db.Exec(query, movieID, genreID)
+
+	return err
+}
+
+func (r *GenreRepository) DeleteRelationship(genreID, movieID int) error {
+	query := "DELETE FROM movie_genres WHERE movie_id = ? AND genre_id = ?"
+	_, err := r.db.Exec(query, movieID, genreID)
+
+	return err
+}
+
+func (r *GenreRepository) GetMovies(genreID int) ([]models.Movie, error) {
+	rows, err := r.db.Query("SELECT * FROM movie WHERE id in (SELECT movie_id FROM movie_genres WHERE genre_id = ?)", genreID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	movies := []models.Movie{}
+	for rows.Next() {
+		var movie models.Movie
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
+			return nil, err // TODO: concretize error
+		}
+		movies = append(movies, movie)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err // TODO: concretize error
+	}
+
+	return movies, nil
+}
