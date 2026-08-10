@@ -6,19 +6,19 @@ Actor (fields: id, name, birth_date)
 */
 
 CREATE TABLE IF NOT EXISTS genre (
-	id INT PRIMARY KEY	NOT NULL,
+	id INTEGER PRIMARY KEY,
 	name TEXT							NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS movie (
-	id INT PRIMARY KEY	NOT NULL,
+	id INTEGER PRIMARY KEY,
 	title TEXT							NOT NULL,
 	release_year INT					NOT NULL,
 	duration INT        NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS actor (
-	id INT PRIMARY KEY	NOT NULL,
+	id INTEGER PRIMARY KEY,
 	name TEXT							NOT NULL,
 	birth_date TEXT						NOT NULL
 );
