@@ -5,7 +5,9 @@ import (
 	"movies-api/internal/models"
 )
 
-type MovieRepository struct { // In go, there's no possibility to creating a method to other package's structs. Some handshaker must be created :(
+// In go, there's no possibility to creating a method to other package's structs.
+// Some handshaker must be created :(
+type MovieRepository struct {
 	db *sql.DB
 }
 
