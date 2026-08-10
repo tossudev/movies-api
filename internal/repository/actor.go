@@ -70,3 +70,40 @@ func (r *ActorRepository) Delete(id int) error {
 
 	return err
 }
+
+func (r *ActorRepository) CreateRelationship(actorID, movieID int) error {
+	query := "INSERT INTO movie_actors VALUES (?, ?)"
+	_, err := r.db.Exec(query, movieID, actorID)
+
+	return err
+}
+
+func (r *ActorRepository) DeleteRelationship(actorID, movieID int) error {
+	query := "DELETE FROM movie_actors WHERE movie_id = ? AND actor_id = ?"
+	_, err := r.db.Exec(query, movieID, actorID)
+
+	return err
+}
+
+func (r *ActorRepository) GetMovies(actorID int) ([]models.Movie, error) {
+	rows, err := r.db.Query("SELECT * FROM movie WHERE id in (SELECT movie_id FROM movie_actors WHERE actor_id = ?)", actorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	movies := []models.Movie{}
+	for rows.Next() {
+		var movie models.Movie
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
+			return nil, err // TODO: concretize error
+		}
+		movies = append(movies, movie)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err // TODO: concretize error
+	}
+
+	return movies, nil
+}
