@@ -39,7 +39,7 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 	var movie models.Movie
 	// TODO: should use indexed variables or '?'
-	query := "SELECT * FROM movie WHERE id = $1;"
+	query := "SELECT * FROM movie WHERE id = ?;"
 
 	row := r.db.QueryRow(query, id)
 
@@ -51,22 +51,22 @@ func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 }
 
 func (r *MovieRepository) Create(movie models.Movie) error {
-	query := "INSERT INTO movie (title, release_year, duration) VALUES ($1, $2, $3)"
+	query := "INSERT INTO movie (title, release_year, duration) VALUES (?, ?, ?)"
 	_, err := r.db.Exec(query, movie.Title, movie.Releaseyear, movie.Duration)
-	
+
 	return err
 }
 
 func (r *MovieRepository) Update(movie models.Movie) error {
-	query := "UPDATE movie SET title = ?, release_year = ?, duration = ? WHERE id = ?" 
+	query := "UPDATE movie SET title = ?, release_year = ?, duration = ? WHERE id = ?"
 	_, err := r.db.Exec(query, movie.Title, movie.Releaseyear, movie.Duration, movie.ID)
-	
+
 	return err
 }
 
 func (r *MovieRepository) Delete(id int) error {
-	query := "DELETE FROM movie WHERE id = $1"
+	query := "DELETE FROM movie WHERE id = ?"
 	_, err := r.db.Exec(query, id)
-	
+
 	return err
 }
