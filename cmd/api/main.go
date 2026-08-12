@@ -2,11 +2,14 @@ package main
 
 import (
 	"log"
+	"fmt"
 	"net/http"
 
 	"movies-api/internal/config"
 	"movies-api/internal/db"
 	"movies-api/internal/routes"
+	"movies-api/internal/repository"
+	"movies-api/internal/validator"
 )
 
 func main() {
@@ -24,12 +27,20 @@ func main() {
 	handler := routes.New(database)
 
 	// ! [TESTING FUNCTIONALITY]:
-	// movieRepo := repository.NewMovieRepository(database)
-	// movie, err := movieRepo.GetByID(31)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println(movie)
+
+	repository.InitActorRepository(database)
+	repository.InitMovieRepository(database)
+	repository.InitGenreRepository(database)
+	
+	fmt.Println(validator.ActorExists(1))		// true
+	fmt.Println(validator.MovieExists(1))		// true
+	fmt.Println(validator.GenreExists(-1))		// false
+
+	movie, err := repository.Movie.GetByID(1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(movie)
 
 	log.Printf("Server listening on %s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(cfg.ServerPort, handler))

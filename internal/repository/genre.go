@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+
 	"movies-api/internal/models"
 )
 
@@ -9,8 +10,10 @@ type GenreRepository struct {
 	db *sql.DB
 }
 
-func NewGenreRepository(db *sql.DB) *GenreRepository {
-	return &GenreRepository{db: db}
+var Genre *GenreRepository
+
+func InitGenreRepository(db *sql.DB) {
+	Genre = &GenreRepository{db: db}
 }
 
 func (r *GenreRepository) GetAll() ([]models.Genre, error) {

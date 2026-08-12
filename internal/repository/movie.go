@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+
 	"movies-api/internal/models"
 )
 
@@ -11,8 +12,10 @@ type MovieRepository struct {
 	db *sql.DB
 }
 
-func NewMovieRepository(db *sql.DB) *MovieRepository {
-	return &MovieRepository{db: db}
+var Movie *MovieRepository
+
+func InitMovieRepository(db *sql.DB) {
+	Movie = &MovieRepository{db: db}
 }
 
 func (r *MovieRepository) GetAll() ([]models.Movie, error) {
@@ -40,7 +43,6 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 
 func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 	var movie models.Movie
-	// TODO: should use indexed variables or '?'
 	query := "SELECT * FROM movie WHERE id = ?;"
 
 	row := r.db.QueryRow(query, id)
