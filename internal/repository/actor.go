@@ -39,6 +39,11 @@ func (r *ActorRepository) GetAll() ([]models.Actor, error) {
 	return actors, nil
 }
 
+func (r *ActorRepository) Exists(id int) bool {
+	_, err := r.GetByID(id)
+	return err != sql.ErrNoRows
+}
+
 func (r *ActorRepository) GetByID(id int) (models.Actor, error) {
 	var actor models.Actor
 	query := "SELECT * FROM actor WHERE id = ?;"

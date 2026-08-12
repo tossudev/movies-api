@@ -41,6 +41,11 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 	return movies, nil
 }
 
+func (r *MovieRepository) Exists(id int) bool {
+	_, err := r.GetByID(id)
+	return err != sql.ErrNoRows
+}
+
 func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 	var movie models.Movie
 	query := "SELECT * FROM movie WHERE id = ?;"

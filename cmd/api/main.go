@@ -9,7 +9,6 @@ import (
 	"movies-api/internal/db"
 	"movies-api/internal/routes"
 	"movies-api/internal/repository"
-	"movies-api/internal/validator"
 )
 
 func main() {
@@ -32,9 +31,10 @@ func main() {
 	repository.InitMovieRepository(database)
 	repository.InitGenreRepository(database)
 	
-	fmt.Println(validator.ActorExists(1))		// true
-	fmt.Println(validator.MovieExists(1))		// true
-	fmt.Println(validator.GenreExists(-1))		// false
+	fmt.Println(repository.Movie.Exists(1))		// true
+	fmt.Println(repository.Genre.Exists(1))		// true
+	fmt.Println(repository.Actor.Exists(1))		// true
+	fmt.Println(repository.Movie.Exists(-1))	// false
 
 	movie, err := repository.Movie.GetByID(1)
 	if err != nil {
