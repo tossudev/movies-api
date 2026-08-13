@@ -1,9 +1,97 @@
 {
   "info": {
-    "name": "Movie Database API",
-    "description": null,
+    "name": "movies-api",
+    "description": "Collection of endpoints for the Movies API.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "item": [],
-  "variable": []
+  "auth": {
+    "type": "noauth"
+  },
+  "item": [
+    {
+      "name": "actors",
+      "description": "Endpoints for actor resources.",
+      "item": [
+        {
+          "name": "Get all actors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/actors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actors"
+              ],
+              "query": [],
+              "variable": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "movies",
+      "description": "Endpoints for movie resources.",
+      "item": [
+        {
+          "name": "Get all movies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Returns a list of all movies.",
+            "url": {
+              "raw": "{{baseUrl}}/movies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "movies"
+              ],
+              "query": [],
+              "variable": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "genres",
+      "description": "Endpoints for genre resources.",
+      "item": [
+        {
+          "name": "Get all genres",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Returns a list of all genres.",
+            "url": {
+              "raw": "{{baseUrl}}/genres",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "genres"
+              ],
+              "query": [],
+              "variable": []
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    }
+  ]
 }

@@ -17,8 +17,7 @@
 
 !*.md
 !*.sql
-
-!postman/movies-api.postman_collection.json
+!postman/*.postman_collection.json
 
 !LICENSE
 !Makefile

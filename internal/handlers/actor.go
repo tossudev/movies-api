@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
+	"movies-api/internal/dto"
+	"movies-api/internal/response"
 	"movies-api/internal/service"
 )
 
@@ -16,5 +17,21 @@ func NewActorHandler(service *service.ActorService) *ActorHandler {
 }
 
 func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "joonas suokko")
+	actors, err := h.service.GetAll()
+	if err != nil {
+		response.WriteError(w, http.StatusInternalServerError, "failed to retrieve actors")
+		return
+	}
+
+	res := make([]dto.ActorResponse, 0, len(actors))
+
+	for _, actor := range actors {
+		res = append(res, dto.ActorResponse{
+			ID:        actor.ID,
+			Name:      actor.Name,
+			BirthDate: actor.BirthDate,
+		})
+	}
+
+	response.WriteJSON(w, http.StatusOK, res)
 }

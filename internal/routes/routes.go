@@ -30,13 +30,13 @@ func New(database *sql.DB) http.Handler {
 	mux := http.NewServeMux()
 
 	// Actors
-	mux.HandleFunc("GET /api/actor", actorHandler.GetAll) // Retrieve all actors.
+	mux.HandleFunc("GET /api/actors", actorHandler.GetAll) // Retrieve all actors.
 
 	// Movies
-	mux.HandleFunc("GET /api/movie", movieHandler.GetAll) // Retrieve all actors.
+	mux.HandleFunc("GET /api/movies", movieHandler.GetAll) // Retrieve all movies.
 
 	// Genres
-	mux.HandleFunc("GET /api/genre", genreHandler.GetAll) // Retrieve all actors.
+	mux.HandleFunc("GET /api/genres", genreHandler.GetAll) // Retrieve all genres.
 
 	// Middleware
 	handler := middleware.Logger(mux)

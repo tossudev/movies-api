@@ -23,6 +23,7 @@ movies-api/
 │   │   └── actor.go                 # Actor entity
 │   │
 │   ├── dto/
+│   │   ├── error.go                 # Error response DTO
 │   │   ├── movie.go                 # Request and response DTOs
 │   │   ├── genre.go
 │   │   └── actor.go
@@ -47,9 +48,8 @@ movies-api/
 │   │   ├── logging.go               # Request logging middleware
 │   │   └── recover.go               # Panic recovery middleware
 │   │
-│   ├── http/
-│   │   ├── response.go              # JSON response helpers
-│   │   └── errors.go                # HTTP error helpers
+│   ├── response/
+│   │   └── response.go              # JSON and error response helpers
 │   │
 │   ├── routes/
 │   │   └── routes.go                # Route registration
@@ -216,9 +216,9 @@ Middleware provides reusable functionality that applies to every endpoint.
 
 ---
 
-### http/
+### response/
 
-Shared HTTP utilities.
+Shared API response utilities for writing consistent responses.
 
 Responsibilities include:
 
