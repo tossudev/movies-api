@@ -1,8 +1,8 @@
 package models
 
 type Movie struct {
-	ID          int
-	Title       string
-	Releaseyear int
-	Duration    int
+	ID          int    `validate:"required,gt=0"`
+	Title       string `validate:"required"`
+	Releaseyear int    `validate:"required,gt=0"`
+	Duration    int    `validate:"required,gt=0"`
 }

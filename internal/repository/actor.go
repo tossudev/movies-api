@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+
 	"movies-api/internal/models"
 )
 
@@ -36,9 +37,13 @@ func (r *ActorRepository) GetAll() ([]models.Actor, error) {
 	return actors, nil
 }
 
+func (r *ActorRepository) Exists(id int) bool {
+	_, err := r.GetByID(id)
+	return err != sql.ErrNoRows
+}
+
 func (r *ActorRepository) GetByID(id int) (models.Actor, error) {
 	var actor models.Actor
-	// TODO: should use indexed variables or '?'
 	query := "SELECT * FROM actor WHERE id = ?;"
 
 	row := r.db.QueryRow(query, id)

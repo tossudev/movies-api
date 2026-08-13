@@ -2,11 +2,10 @@ package repository
 
 import (
 	"database/sql"
+
 	"movies-api/internal/models"
 )
 
-// In go, there's no possibility to creating a method to other package's structs.
-// Some handshaker must be created :(
 type MovieRepository struct {
 	db *sql.DB
 }
@@ -38,9 +37,13 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 	return movies, nil
 }
 
+func (r *MovieRepository) Exists(id int) bool {
+	_, err := r.GetByID(id)
+	return err != sql.ErrNoRows
+}
+
 func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 	var movie models.Movie
-	// TODO: should use indexed variables or '?'
 	query := "SELECT * FROM movie WHERE id = ?;"
 
 	row := r.db.QueryRow(query, id)

@@ -23,14 +23,6 @@ func main() {
 
 	handler := routes.New(database)
 
-	// ! [TESTING FUNCTIONALITY]:
-	// movieRepo := repository.NewMovieRepository(database)
-	// movie, err := movieRepo.GetByID(31)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println(movie)
-
 	log.Printf("Server listening on %s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(cfg.ServerPort, handler))
 }
