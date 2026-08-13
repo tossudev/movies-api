@@ -17,6 +17,7 @@
 
 !*.md
 !*.sql
+!postman/*.json
 
 !postman/movies-api.postman_collection.json
 

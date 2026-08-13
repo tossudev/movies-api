@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
+	"movies-api/internal/dto"
 	"movies-api/internal/service"
 )
 
@@ -16,5 +17,21 @@ func NewGenreHandler(service *service.GenreService) *GenreHandler {
 }
 
 func (h *GenreHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "poetry, fiction")
+	Genres, err := h.service.GetAll()
+	if err != nil {
+		http.Error(w, "failed to retrieve Genres", http.StatusInternalServerError)
+		return
+	}
+
+	res := make([]dto.GenreResponse, 0, len(Genres))
+
+	for _, Genre := range Genres {
+		res = append(res, dto.GenreResponse{
+			ID:   Genre.ID,
+			Name: Genre.Name,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
 }

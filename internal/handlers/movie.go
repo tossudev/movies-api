@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
+	"movies-api/internal/dto"
 	"movies-api/internal/service"
 )
 
@@ -16,5 +17,23 @@ func NewMovieHandler(service *service.MovieService) *MovieHandler {
 }
 
 func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "out of the ashes")
+	Movies, err := h.service.GetAll()
+	if err != nil {
+		http.Error(w, "failed to retrieve Movies", http.StatusInternalServerError)
+		return
+	}
+
+	res := make([]dto.MovieResponse, 0, len(Movies))
+
+	for _, movie := range Movies {
+		res = append(res, dto.MovieResponse{
+			ID:          movie.ID,
+			Title:       movie.Title,
+			ReleaseYear: movie.Releaseyear,
+			Duration:    movie.Duration,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
 }
