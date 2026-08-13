@@ -64,7 +64,7 @@ movies-api/
 │   └── seed.sql                     # Sample data
 │
 ├── postman/
-│   └── Movie_Database_API.postman_collection.json
+│   └── movies-api.postman_collection.json
 │
 ├── docs/
 │   ├── architecture.md
