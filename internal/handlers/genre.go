@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"movies-api/internal/dto"
+	"movies-api/internal/response"
 	"movies-api/internal/service"
 )
 
@@ -17,21 +17,20 @@ func NewGenreHandler(service *service.GenreService) *GenreHandler {
 }
 
 func (h *GenreHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	Genres, err := h.service.GetAll()
+	genres, err := h.service.GetAll()
 	if err != nil {
-		http.Error(w, "failed to retrieve Genres", http.StatusInternalServerError)
+		response.WriteError(w, http.StatusInternalServerError, "failed to retrieve genres")
 		return
 	}
 
-	res := make([]dto.GenreResponse, 0, len(Genres))
+	res := make([]dto.GenreResponse, 0, len(genres))
 
-	for _, Genre := range Genres {
+	for _, genre := range genres {
 		res = append(res, dto.GenreResponse{
-			ID:   Genre.ID,
-			Name: Genre.Name,
+			ID:   genre.ID,
+			Name: genre.Name,
 		})
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	response.WriteJSON(w, http.StatusOK, res)
 }

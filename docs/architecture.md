@@ -349,15 +349,15 @@ Typical validation includes:
 
 ---
 
-## HTTP Utilities
+## API Response Utilities
 
 **Location**
 
 ```text
-internal/http/
+internal/response/
 ```
 
-Shared HTTP utilities provide:
+Shared API response utilities provide:
 
 - Standard JSON responses
 - Error formatting

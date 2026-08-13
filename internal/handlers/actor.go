@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"movies-api/internal/dto"
+	"movies-api/internal/response"
 	"movies-api/internal/service"
 )
 
@@ -19,7 +19,7 @@ func NewActorHandler(service *service.ActorService) *ActorHandler {
 func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	actors, err := h.service.GetAll()
 	if err != nil {
-		http.Error(w, "failed to retrieve actors", http.StatusInternalServerError)
+		response.WriteError(w, http.StatusInternalServerError, "failed to retrieve actors")
 		return
 	}
 
@@ -33,6 +33,5 @@ func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
+	response.WriteJSON(w, http.StatusOK, res)
 }
