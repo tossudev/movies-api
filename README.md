@@ -40,7 +40,7 @@ go mod download
 Start the API server:
 
 ```bash
-go run ./cmd/api/main.go
+go run ./cmd/api/
 ```
 
 The server will be available at:

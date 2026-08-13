@@ -6,16 +6,12 @@ import (
 	"movies-api/internal/models"
 )
 
-// In go, there's no possibility to creating a method to other package's structs.
-// Some handshaker must be created :(
 type MovieRepository struct {
 	db *sql.DB
 }
 
-var Movie *MovieRepository
-
-func InitMovieRepository(db *sql.DB) {
-	Movie = &MovieRepository{db: db}
+func NewMovieRepository(db *sql.DB) *MovieRepository {
+	return &MovieRepository{db: db}
 }
 
 func (r *MovieRepository) GetAll() ([]models.Movie, error) {

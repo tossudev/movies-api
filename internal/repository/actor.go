@@ -10,10 +10,8 @@ type ActorRepository struct {
 	db *sql.DB
 }
 
-var Actor *ActorRepository
-
-func InitActorRepository(db *sql.DB) {
-	Actor = &ActorRepository{db: db}
+func NewActorRepository(db *sql.DB) *ActorRepository {
+	return &ActorRepository{db: db}
 }
 
 func (r *ActorRepository) GetAll() ([]models.Actor, error) {

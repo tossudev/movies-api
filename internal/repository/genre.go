@@ -10,10 +10,8 @@ type GenreRepository struct {
 	db *sql.DB
 }
 
-var Genre *GenreRepository
-
-func InitGenreRepository(db *sql.DB) {
-	Genre = &GenreRepository{db: db}
+func NewGenreRepository(db *sql.DB) *GenreRepository {
+	return &GenreRepository{db: db}
 }
 
 func (r *GenreRepository) GetAll() ([]models.Genre, error) {
