@@ -6,4 +6,5 @@ type Movie struct {
 	Releaseyear int    `validate:"required,gt=0"`
 	Duration    int    `validate:"required,gt=0"`
 	Actors      []Actor
+	Genres      []Genre
 }
