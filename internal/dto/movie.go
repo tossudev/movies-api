@@ -1,5 +1,9 @@
 package dto
 
+import (
+	"movies-api/internal/models"
+)
+
 type CreateMovieRequest struct {
 	Title       string `json:"title" validate:"required"`
 	ReleaseYear int    `json:"releaseYear" validate:"required,gt=0"`
@@ -22,5 +26,5 @@ type MovieResponse struct {
 	ReleaseYear int             `json:"releaseYear"`
 	Duration    int             `json:"duration"`
 	Genres      []GenreResponse `json:"genres,omitempty"`
-	Actors      []ActorResponse `json:"actors,omitempty"`
+	Actors      []models.Actor  `json:"actors,omitempty"`
 }

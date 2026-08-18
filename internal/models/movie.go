@@ -5,4 +5,5 @@ type Movie struct {
 	Title       string `validate:"required"`
 	Releaseyear int    `validate:"required,gt=0"`
 	Duration    int    `validate:"required,gt=0"`
+	Actors      []Actor
 }

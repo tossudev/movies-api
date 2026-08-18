@@ -27,6 +27,11 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
 			return nil, err // TODO: concretize error
 		}
+
+		if movie.Actors, err = r.getActors(movie.ID); err != nil {
+			return nil, err
+		}
+
 		movies = append(movies, movie)
 	}
 
@@ -74,4 +79,27 @@ func (r *MovieRepository) Delete(id int) error {
 	_, err := r.db.Exec(query, id)
 
 	return err
+}
+
+func (r *MovieRepository) getActors(movieID int) ([]models.Actor, error) {
+	rows, err := r.db.Query("SELECT * FROM actor WHERE id in (SELECT actor_id FROM movie_actors WHERE movie_id = ?)", movieID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	actors := []models.Actor{}
+	for rows.Next() {
+		var actor models.Actor
+		if err := rows.Scan(&actor.ID, &actor.Name, &actor.BirthDate); err != nil {
+			return nil, err // TODO: concretize error
+		}
+		actors = append(actors, actor)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err // TODO: concretize error
+	}
+
+	return actors, nil
 }
