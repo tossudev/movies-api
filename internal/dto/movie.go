@@ -21,10 +21,10 @@ type UpdateMovieRequest struct {
 }
 
 type MovieResponse struct {
-	ID          int             `json:"id"`
-	Title       string          `json:"title"`
-	ReleaseYear int             `json:"releaseYear"`
-	Duration    int             `json:"duration"`
-	Genres      []GenreResponse `json:"genres,omitempty"`
-	Actors      []models.Actor  `json:"actors,omitempty"`
+	ID          int            `json:"id"`
+	Title       string         `json:"title"`
+	ReleaseYear int            `json:"releaseYear"`
+	Duration    int            `json:"duration"`
+	Genres      []models.Genre `json:"genres,omitempty"`
+	Actors      []models.Actor `json:"actors,omitempty"`
 }

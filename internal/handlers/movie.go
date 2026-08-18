@@ -32,6 +32,7 @@ func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 			ReleaseYear: movie.Releaseyear,
 			Duration:    movie.Duration,
 			Actors:      movie.Actors,
+			Genres:      movie.Genres,
 		})
 	}
 
