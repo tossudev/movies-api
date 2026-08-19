@@ -5,48 +5,20 @@
   },
   "item": [
     {
-      "name": "Actor lifecycle",
+      "name": "Actors",
       "item": [
+        {
+          "name": "Get all actors",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Response is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/actors" }
+        },
         {
           "name": "Create actor",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const suffix = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;",
-                  "pm.collectionVariables.set('actorName', `Postman actor ${suffix}`);",
-                  "pm.collectionVariables.set('actorBirthDate', '2000-01-01');"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
-                  "const actor = pm.response.json();",
-                  "pm.test('Response contains the created actor', () => {",
-                  "  pm.expect(actor.id).to.be.a('number');",
-                  "  pm.expect(actor.name).to.eql(pm.collectionVariables.get('actorName'));",
-                  "});",
-                  "pm.collectionVariables.set('actorId', actor.id);"
-                ]
-              }
-            }
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["const suffix = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;", "pm.collectionVariables.set('actorName', `Postman actor ${suffix}`);", "pm.collectionVariables.set('actorBirthDate', '2000-01-01');"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "const actor = pm.response.json();", "pm.test('Response contains the created actor', () => {", "  pm.expect(actor.id).to.be.a('number');", "  pm.expect(actor.name).to.eql(pm.collectionVariables.get('actorName'));", "});", "pm.collectionVariables.set('actorId', actor.id);"] } }
           ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"{{actorName}}\",\n  \"birthDate\": \"{{actorBirthDate}}\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": "{{baseUrl}}/actors"
-          }
+          "request": { "method": "POST", "header": [], "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{actorName}}\",\n  \"birthDate\": \"{{actorBirthDate}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/actors" }
         },
         {
           "name": "Get created actor",
@@ -74,8 +46,13 @@
       ]
     },
     {
-      "name": "Genre lifecycle",
+      "name": "Genres",
       "item": [
+        {
+          "name": "Get all genres",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Response is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/genres" }
+        },
         {
           "name": "Create genre",
           "event": [
@@ -106,6 +83,124 @@
           "name": "Confirm genre was deleted",
           "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 404', () => pm.response.to.have.status(404));"] } }],
           "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/genres/{{genreId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Movies",
+      "item": [
+        {
+          "name": "Get all movies",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Response is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies" }
+        }
+      ]
+    },
+    {
+      "name": "Movie relationships and filters",
+      "item": [
+        {
+          "name": "Create movie test actor",
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["const suffix = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;", "pm.collectionVariables.set('movieTestSuffix', suffix);", "pm.collectionVariables.set('movieActorName', `Postman movie actor ${suffix}`);"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('movieActorId', pm.response.json().id);"] } }
+          ],
+          "request": { "method": "POST", "header": [], "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{movieActorName}}\",\n  \"birthDate\": \"2000-01-01\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/actors" }
+        },
+        {
+          "name": "Create movie test genre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('movieGenreId', pm.response.json().id);"] } }],
+          "request": { "method": "POST", "header": [], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman movie genre {{movieTestSuffix}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/genres" }
+        },
+        {
+          "name": "Create movie",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "const movie = pm.response.json();", "pm.test('Response contains the created movie', () => pm.expect(movie.id).to.be.a('number'));", "pm.collectionVariables.set('movieId', movie.id);"] } }],
+          "request": { "method": "POST", "header": [], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Postman movie {{movieTestSuffix}}\",\n  \"releaseYear\": 2000,\n  \"duration\": 120,\n  \"genreIds\": [{{movieGenreId}}],\n  \"actorIds\": [{{movieActorId}}]\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/movies" }
+        },
+        {
+          "name": "Get created movie",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Response is the created movie', () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('movieId'))));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies/{{movieId}}" }
+        },
+        {
+          "name": "Update created movie",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "PATCH", "header": [], "body": { "mode": "raw", "raw": "{\n  \"duration\": 121\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/movies/{{movieId}}" }
+        },
+        {
+          "name": "Filter movies by genre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies?genre={{movieGenreId}}" }
+        },
+        {
+          "name": "Filter movies by release year",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies?year=2000" }
+        },
+        {
+          "name": "Filter movies by actor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies?actor={{movieActorId}}" }
+        },
+        {
+          "name": "Get actors in movie",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies/{{movieId}}/actors" }
+        },
+        {
+          "name": "Get movies in genre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/genres/{{movieGenreId}}/movies" }
+        },
+        {
+          "name": "Filter actors by name",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/actors?name={{movieActorName}}" }
+        },
+        {
+          "name": "Paginate movies",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies?page=0&size=10" }
+        },
+        {
+          "name": "Search movies by title",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies/search?title={{movieTestSuffix}}" }
+        },
+        {
+          "name": "Reject deleting associated actor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 400', () => pm.response.to.have.status(400));"] } }],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/actors/{{movieActorId}}" }
+        },
+        {
+          "name": "Reject deleting associated genre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 400', () => pm.response.to.have.status(400));"] } }],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/genres/{{movieGenreId}}" }
+        },
+        {
+          "name": "Force delete associated actor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 204', () => pm.response.to.have.status(204));"] } }],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/actors/{{movieActorId}}?force=true" }
+        },
+        {
+          "name": "Force delete associated genre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 204', () => pm.response.to.have.status(204));"] } }],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/genres/{{movieGenreId}}?force=true" }
+        },
+        {
+          "name": "Confirm movie remains after force deletes",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Movie associations were removed', () => {", "  const movie = pm.response.json();", "  pm.expect(movie.actors || []).to.be.empty;", "  pm.expect(movie.genres || []).to.be.empty;", "});"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies/{{movieId}}" }
+        },
+        {
+          "name": "Delete created movie",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 204', () => pm.response.to.have.status(204));"] } }],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/movies/{{movieId}}" }
+        },
+        {
+          "name": "Confirm movie was deleted",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 404', () => pm.response.to.have.status(404));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/movies/{{movieId}}" }
         }
       ]
     }
