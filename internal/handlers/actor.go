@@ -1,27 +1,28 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"movies-api/internal/dto"
 	"movies-api/internal/response"
 	"movies-api/internal/service"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type ActorHandler struct {
-	service *service.ActorService
+	service   *service.ActorService
+	validator *validator.Validate
 }
 
-func NewActorHandler(service *service.ActorService) *ActorHandler {
-	return &ActorHandler{service: service}
+func NewActorHandler(service *service.ActorService, validator *validator.Validate) *ActorHandler {
+	return &ActorHandler{service: service, validator: validator}
 }
 
 func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	actors, err := h.service.GetAll()
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "failed to retrieve actors")
+		response.WriteError(w, http.StatusInternalServerError, "Failed to retrieve actors")
 		return
 	}
 
@@ -39,16 +40,18 @@ func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ActorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
+
 	actor, err := h.service.GetByID(id)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Actor does not exist")
+		response.WriteError(w, http.StatusNotFound, "Actor does not exist")
 		return
 	}
+
 	res := dto.ActorResponse{
 		ID:        actor.ID,
 		Name:      actor.Name,
@@ -59,29 +62,45 @@ func (h *ActorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
-	req, err := h.decodeCreateRequest(r)
+	req, err := decodeRequest[dto.CreateActorRequest](r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
+		response.WriteError(w, http.StatusBadRequest, "Malformed JSON")
 		return
 	}
 
-	if err := h.service.Create(req); err != nil {
+	if err := h.validator.Struct(req); err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Invalid request")
+		return
+	}
+
+	actor, err := h.service.Create(req)
+	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed creating actor")
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "Successfully added actor")
+	response.WriteJSON(w, http.StatusCreated, dto.ActorResponse{
+		ID:        actor.ID,
+		Name:      actor.Name,
+		BirthDate: actor.BirthDate,
+	})
 }
 
 func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
-	req, err := h.decodeUpdateRequest(r)
+	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
-	id, err := strconv.Atoi(r.PathValue("id"))
+
+	req, err := decodeRequest[dto.UpdateActorRequest](r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
+		response.WriteError(w, http.StatusBadRequest, "Malformed JSON")
+		return
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
 
@@ -94,32 +113,16 @@ func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	if err := h.service.Delete(id); err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed deleting actor")
+		response.WriteError(w, http.StatusNotFound, "Failed deleting actor")
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "Successfull deleted actor")
-}
-
-func (h *ActorHandler) decodeCreateRequest(r *http.Request) (dto.CreateActorRequest, error) {
-	decoder := json.NewDecoder(r.Body)
-	var req dto.CreateActorRequest
-	err := decoder.Decode(&req)
-
-	return req, err
-}
-
-func (h *ActorHandler) decodeUpdateRequest(r *http.Request) (dto.UpdateActorRequest, error) {
-	decoder := json.NewDecoder(r.Body)
-	var req dto.UpdateActorRequest
-	err := decoder.Decode(&req)
-
-	return req, err
+	w.WriteHeader(http.StatusNoContent)
 }

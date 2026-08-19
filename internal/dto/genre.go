@@ -5,7 +5,7 @@ type CreateGenreRequest struct {
 }
 
 type UpdateGenreRequest struct {
-	Name *string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty" validate:"omitempty,min=1"`
 }
 
 type GenreResponse struct {

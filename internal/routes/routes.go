@@ -8,9 +8,14 @@ import (
 	"movies-api/internal/middleware"
 	"movies-api/internal/repository"
 	"movies-api/internal/service"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func New(database *sql.DB) http.Handler {
+	// Dependencies
+	validate := validator.New()
+
 	// Repositories
 	actorRepo := repository.NewActorRepository(database)
 	movieRepo := repository.NewMovieRepository(database)
@@ -22,9 +27,9 @@ func New(database *sql.DB) http.Handler {
 	genreService := service.NewGenreService(genreRepo)
 
 	// Handlers
-	actorHandler := handlers.NewActorHandler(actorService)
-	movieHandler := handlers.NewMovieHandler(movieService)
-	genreHandler := handlers.NewGenreHandler(genreService)
+	actorHandler := handlers.NewActorHandler(actorService, validate)
+	movieHandler := handlers.NewMovieHandler(movieService, validate)
+	genreHandler := handlers.NewGenreHandler(genreService, validate)
 
 	// Routes
 	mux := http.NewServeMux()

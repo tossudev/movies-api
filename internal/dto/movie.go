@@ -13,11 +13,11 @@ type CreateMovieRequest struct {
 }
 
 type UpdateMovieRequest struct {
-	Title       *string `json:"title,omitempty"`
-	ReleaseYear *int    `json:"releaseYear,omitempty"`
-	Duration    *int    `json:"duration,omitempty"`
-	GenreIDs    *[]int  `json:"genreIds,omitempty"`
-	ActorIDs    *[]int  `json:"actorIds,omitempty"`
+	Title       *string `json:"title,omitempty" validate:"omitempty,min=1"`
+	ReleaseYear *int    `json:"releaseYear,omitempty" validate:"omitempty,gt=0"`
+	Duration    *int    `json:"duration,omitempty" validate:"omitempty,gt=0"`
+	GenreIDs    *[]int  `json:"genreIds,omitempty" validate:"omitempty,dive,gt=0"`
+	ActorIDs    *[]int  `json:"actorIds,omitempty" validate:"omitempty,dive,gt=0"`
 }
 
 type MovieResponse struct {

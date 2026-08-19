@@ -1,344 +1,116 @@
 {
   "info": {
     "name": "movies-api",
-    "description": "Collection of endpoints for the Movies API.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "actors",
+      "name": "Actor lifecycle",
       "item": [
-        {
-          "name": "Get all actors",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/actors",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "actors"
-              ],
-              "query": [],
-              "variable": []
-            }
-          }
-        },
-        {
-          "name": "Get actor by id",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/actors/1",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "actors",
-                "1"
-              ],
-              "query": [],
-              "variable": []
-            }
-          }
-        },
         {
           "name": "Create actor",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const suffix = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;",
+                  "pm.collectionVariables.set('actorName', `Postman actor ${suffix}`);",
+                  "pm.collectionVariables.set('actorBirthDate', '2000-01-01');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+                  "const actor = pm.response.json();",
+                  "pm.test('Response contains the created actor', () => {",
+                  "  pm.expect(actor.id).to.be.a('number');",
+                  "  pm.expect(actor.name).to.eql(pm.collectionVariables.get('actorName'));",
+                  "});",
+                  "pm.collectionVariables.set('actorId', actor.id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/actors",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "actors"
-              ],
-              "query": [],
-              "variable": []
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\" : \"test\",\n  \"birthDate\" : \"2000-01-01\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
+              "raw": "{\n  \"name\": \"{{actorName}}\",\n  \"birthDate\": \"{{actorBirthDate}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/actors"
           }
         },
         {
-          "name": "Update actor",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/actors/1",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "actors",
-                "1"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\" : \"test patch\",\n  \"birthDate\" : \"2000-01-01\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
+          "name": "Get created actor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Response is the created actor', () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('actorId'))));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/actors/{{actorId}}" }
         },
         {
-          "name": "Delete actor",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/actors/1",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "actors",
-                "1"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
+          "name": "Update created actor",
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('updatedActorName', `${pm.collectionVariables.get('actorName')} updated`);"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": { "method": "PATCH", "header": [], "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{updatedActorName}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/actors/{{actorId}}" }
+        },
+        {
+          "name": "Delete created actor",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 204', () => pm.response.to.have.status(204));"] } }],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/actors/{{actorId}}" }
+        },
+        {
+          "name": "Confirm actor was deleted",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 404', () => pm.response.to.have.status(404));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/actors/{{actorId}}" }
         }
       ]
     },
     {
-      "name": "movies",
+      "name": "Genre lifecycle",
       "item": [
-        {
-          "name": "Get all movies",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all movies.",
-            "url": {
-              "raw": "{{baseUrl}}/movies",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "movies"
-              ],
-              "query": [],
-              "variable": []
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "genres",
-      "item": [
-        {
-          "name": "Get all genres",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all genres.",
-            "url": {
-              "raw": "{{baseUrl}}/genres",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "genres"
-              ],
-              "query": [],
-              "variable": []
-            }
-          }
-        },
-        {
-          "name": "Get genre by id",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/genres/1",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "genres",
-                "1"
-              ],
-              "query": [],
-              "variable": []
-            }
-          }
-        },
         {
           "name": "Create genre",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/genres",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "genres"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\" : \"test genre\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["const suffix = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;", "pm.collectionVariables.set('genreName', `Postman genre ${suffix}`);"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "const genre = pm.response.json();", "pm.test('Response contains the created genre', () => {", "  pm.expect(genre.id).to.be.a('number');", "  pm.expect(genre.name).to.eql(pm.collectionVariables.get('genreName'));", "});", "pm.collectionVariables.set('genreId', genre.id);"] } }
+          ],
+          "request": { "method": "POST", "header": [], "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{genreName}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/genres" }
         },
         {
-          "name": "Update genre",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/genres/1",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "genres",
-                "1"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\" : \"test patch genre\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
+          "name": "Get created genre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Response is the created genre', () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('genreId'))));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/genres/{{genreId}}" }
         },
         {
-          "name": "Delete genre",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "auth": {
-              "type": "noauth"
-            },
-            "description": "Returns a list of all actors.",
-            "url": {
-              "raw": "{{baseUrl}}/genres/1",
-              "protocol": "",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "genres",
-                "1"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
+          "name": "Update created genre",
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('updatedGenreName', `${pm.collectionVariables.get('genreName')} updated`);"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": { "method": "PATCH", "header": [], "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{updatedGenreName}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/genres/{{genreId}}" }
+        },
+        {
+          "name": "Delete created genre",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 204', () => pm.response.to.have.status(204));"] } }],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/genres/{{genreId}}" }
+        },
+        {
+          "name": "Confirm genre was deleted",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 404', () => pm.response.to.have.status(404));"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/genres/{{genreId}}" }
         }
       ]
     }
   ],
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080/api",
-      "type": "default"
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080/api", "type": "default" }
   ]
 }

@@ -1,27 +1,28 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"movies-api/internal/dto"
 	"movies-api/internal/response"
 	"movies-api/internal/service"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type GenreHandler struct {
-	service *service.GenreService
+	service   *service.GenreService
+	validator *validator.Validate
 }
 
-func NewGenreHandler(service *service.GenreService) *GenreHandler {
-	return &GenreHandler{service: service}
+func NewGenreHandler(service *service.GenreService, validator *validator.Validate) *GenreHandler {
+	return &GenreHandler{service: service, validator: validator}
 }
 
 func (h *GenreHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	genres, err := h.service.GetAll()
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "failed to retrieve genres")
+		response.WriteError(w, http.StatusInternalServerError, "Failed to retrieve genres")
 		return
 	}
 
@@ -38,16 +39,18 @@ func (h *GenreHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GenreHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
+
 	genre, err := h.service.GetByID(id)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Genre does not exist")
+		response.WriteError(w, http.StatusNotFound, "Genre does not exist")
 		return
 	}
+
 	res := dto.GenreResponse{
 		ID:   genre.ID,
 		Name: genre.Name,
@@ -57,36 +60,49 @@ func (h *GenreHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GenreHandler) Create(w http.ResponseWriter, r *http.Request) {
-	req, err := h.decodeCreateRequest(r)
+	req, err := decodeRequest[dto.CreateGenreRequest](r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
+		response.WriteError(w, http.StatusBadRequest, "Malformed JSON")
 		return
 	}
 
-	if err := h.service.Create(req); err != nil {
+	if err := h.validator.Struct(req); err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Invalid request")
+		return
+	}
+
+	genre, err := h.service.Create(req)
+	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed creating genre")
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "Successfully added genre")
+	response.WriteJSON(w, http.StatusCreated, dto.GenreResponse{
+		ID:   genre.ID,
+		Name: genre.Name,
+	})
 }
 
-// Get ID from PathValue and rest from the query
-// /api/{entity}/{id}
 func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
-	req, err := h.decodeUpdateRequest(r)
+	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
-	id, err := strconv.Atoi(r.PathValue("id"))
+
+	req, err := decodeRequest[dto.UpdateGenreRequest](r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
+		response.WriteError(w, http.StatusBadRequest, "Malformed JSON")
+		return
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
 
 	if err := h.service.Update(id, req); err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed creating genre")
+		response.WriteError(w, http.StatusInternalServerError, "Failed updating genre")
 		return
 	}
 
@@ -94,32 +110,16 @@ func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	if err := h.service.Delete(id); err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed deleting genre")
+		response.WriteError(w, http.StatusNotFound, "Failed deleting genre")
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "Successfull deleted genre")
-}
-
-func (h *GenreHandler) decodeUpdateRequest(r *http.Request) (dto.UpdateGenreRequest, error) {
-	decoder := json.NewDecoder(r.Body)
-	var req dto.UpdateGenreRequest
-	err := decoder.Decode(&req)
-
-	return req, err
-}
-
-func (h *GenreHandler) decodeCreateRequest(r *http.Request) (dto.CreateGenreRequest, error) {
-	decoder := json.NewDecoder(r.Body)
-	var req dto.CreateGenreRequest
-	err := decoder.Decode(&req)
-
-	return req, err
+	w.WriteHeader(http.StatusNoContent)
 }

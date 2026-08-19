@@ -57,11 +57,15 @@ func (r *ActorRepository) GetByID(id int) (models.Actor, error) {
 	return actor, nil
 }
 
-func (r *ActorRepository) Create(req dto.CreateActorRequest) error {
+func (r *ActorRepository) Create(req dto.CreateActorRequest) (int, error) {
 	query := "INSERT INTO actor (name, birth_date) VALUES (?, ?)"
-	_, err := r.db.Exec(query, req.Name, req.BirthDate)
+	result, err := r.db.Exec(query, req.Name, req.BirthDate)
+	if err != nil {
+		return 0, err
+	}
 
-	return err
+	id, err := result.LastInsertId()
+	return int(id), err
 }
 
 func (r *ActorRepository) Update(id int, req dto.UpdateActorRequest) error {
@@ -95,9 +99,20 @@ func (r *ActorRepository) Update(id int, req dto.UpdateActorRequest) error {
 
 func (r *ActorRepository) Delete(id int) error {
 	query := "DELETE FROM actor WHERE id = ?"
-	_, err := r.db.Exec(query, id)
+	result, err := r.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
 
-	return err
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (r *ActorRepository) CreateRelationship(actorID, movieID int) error {
