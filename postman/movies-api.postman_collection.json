@@ -4,22 +4,22 @@
     "description": "Collection of endpoints for the Movies API.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "auth": {
-    "type": "noauth"
-  },
   "item": [
     {
       "name": "actors",
-      "description": "Endpoints for actor resources.",
       "item": [
         {
           "name": "Get all actors",
           "request": {
             "method": "GET",
             "header": [],
+            "auth": {
+              "type": "noauth"
+            },
             "description": "Returns a list of all actors.",
             "url": {
               "raw": "{{baseUrl}}/actors",
+              "protocol": "",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -29,23 +29,147 @@
               "query": [],
               "variable": []
             }
-          },
-          "response": []
+          }
+        },
+        {
+          "name": "Get actor by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/actors/1",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actors",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Create actor",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/actors",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actors"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\" : \"test\",\n  \"birthDate\" : \"2000-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update actor",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/actors/1",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actors",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\" : \"test patch\",\n  \"birthDate\" : \"2000-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete actor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/actors/1",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actors",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         }
       ]
     },
     {
       "name": "movies",
-      "description": "Endpoints for movie resources.",
       "item": [
         {
           "name": "Get all movies",
           "request": {
             "method": "GET",
             "header": [],
+            "auth": {
+              "type": "noauth"
+            },
             "description": "Returns a list of all movies.",
             "url": {
               "raw": "{{baseUrl}}/movies",
+              "protocol": "",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -55,23 +179,25 @@
               "query": [],
               "variable": []
             }
-          },
-          "response": []
+          }
         }
       ]
     },
     {
       "name": "genres",
-      "description": "Endpoints for genre resources.",
       "item": [
         {
           "name": "Get all genres",
           "request": {
             "method": "GET",
             "header": [],
+            "auth": {
+              "type": "noauth"
+            },
             "description": "Returns a list of all genres.",
             "url": {
               "raw": "{{baseUrl}}/genres",
+              "protocol": "",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -81,8 +207,129 @@
               "query": [],
               "variable": []
             }
-          },
-          "response": []
+          }
+        },
+        {
+          "name": "Get genre by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/genres/1",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "genres",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Create genre",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/genres",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "genres"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\" : \"test genre\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update genre",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/genres/1",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "genres",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\" : \"test patch genre\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete genre",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Returns a list of all actors.",
+            "url": {
+              "raw": "{{baseUrl}}/genres/1",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "genres",
+                "1"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         }
       ]
     }
@@ -91,7 +338,7 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:8080/api",
-      "type": "string"
+      "type": "default"
     }
   ]
 }
