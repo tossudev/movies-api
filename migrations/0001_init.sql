@@ -23,14 +23,18 @@ CREATE TABLE IF NOT EXISTS actor (
 	birth_date TEXT						NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS movie_genres (
-	movie_id INT NOT NULL,
-	genre_id INT NOT NULL,
-	PRIMARY KEY (movie_id, genre_id)
-);
-
 CREATE TABLE IF NOT EXISTS movie_actors (
-	movie_id INT NOT NULL,
-	actor_id INT NOT NULL,
-	PRIMARY KEY (movie_id, actor_id)
-);
+    movie_id INTEGER NOT NULL,
+    actor_id INTEGER NOT NULL,
+    PRIMARY KEY (movie_id, actor_id),
+    FOREIGN KEY (movie_id) REFERENCES movie(id) ON DELETE CASCADE,
+    FOREIGN KEY (actor_id) REFERENCES actor(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS movie_genres (
+    movie_id INTEGER NOT NULL,
+    genre_id INTEGER NOT NULL,
+    PRIMARY KEY (movie_id, genre_id),
+    FOREIGN KEY (movie_id) REFERENCES movie(id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES genre(id) ON DELETE CASCADE
+  );

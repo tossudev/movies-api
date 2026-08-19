@@ -9,7 +9,7 @@ import (
 )
 
 func Open(path string) (*sql.DB, error) {
-	database, err := sql.Open("sqlite3", path)
+	database, err := sql.Open("sqlite3", path+"?_foreign_keys=on")
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
 	}
