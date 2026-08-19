@@ -30,13 +30,25 @@ func New(database *sql.DB) http.Handler {
 	mux := http.NewServeMux()
 
 	// Actors
-	mux.HandleFunc("GET /api/actors", actorHandler.GetAll) // Retrieve all actors.
+	mux.HandleFunc("GET /api/actors", actorHandler.GetAll)         // Retrieve all actors.
+	mux.HandleFunc("GET /api/actors/{id}", actorHandler.GetByID)   // Retrieve actor by id.
+	mux.HandleFunc("POST /api/actors", actorHandler.Create)        // Create new actor.
+	mux.HandleFunc("PATCH /api/actors/{id}", actorHandler.Update)  // Partially update actor by id.
+	mux.HandleFunc("DELETE /api/actors/{id}", actorHandler.Delete) // Delete actor by id.
 
 	// Movies
 	mux.HandleFunc("GET /api/movies", movieHandler.GetAll) // Retrieve all movies.
+	// mux.HandleFunc("GET /api/movies/", ) // Retrieve movie by id.
+	// mux.HandleFunc("POST /api/movies", ) // Create new movie.
+	// mux.HandleFunc("PATCH /api/movies/", ) // Partially update movie by id.
+	// mux.HandleFunc("DELETE /api/movies/", ) // Delete actor by id.
 
 	// Genres
-	mux.HandleFunc("GET /api/genres", genreHandler.GetAll) // Retrieve all genres.
+	mux.HandleFunc("GET /api/genres", genreHandler.GetAll)         // Retrieve all genres.
+	mux.HandleFunc("GET /api/genres/{id}", genreHandler.GetByID)   // Retrieve genre by id.
+	mux.HandleFunc("POST /api/genres", genreHandler.Create)        // Create new genre.
+	mux.HandleFunc("PATCH /api/genres/{id}", genreHandler.Update)  // Partially update genre by id.
+	mux.HandleFunc("DELETE /api/genres/{id}", genreHandler.Delete) // Delete genre by id.
 
 	// Middleware
 	handler := middleware.Logger(mux)

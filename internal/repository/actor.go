@@ -2,7 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"strings"
 
+	"movies-api/internal/dto"
 	"movies-api/internal/models"
 )
 
@@ -55,16 +57,38 @@ func (r *ActorRepository) GetByID(id int) (models.Actor, error) {
 	return actor, nil
 }
 
-func (r *ActorRepository) Create(actor models.Actor) error {
+func (r *ActorRepository) Create(req dto.CreateActorRequest) error {
 	query := "INSERT INTO actor (name, birth_date) VALUES (?, ?)"
-	_, err := r.db.Exec(query, actor.Name, actor.BirthDate)
+	_, err := r.db.Exec(query, req.Name, req.BirthDate)
 
 	return err
 }
 
-func (r *ActorRepository) Update(actor models.Actor) error {
-	query := "UPDATE actor SET name = ?, birth_date = ? WHERE id = ?"
-	_, err := r.db.Exec(query, actor.Name, actor.BirthDate, actor.ID)
+func (r *ActorRepository) Update(id int, req dto.UpdateActorRequest) error {
+	var sets []string
+	var args []any
+
+	if req.Name != nil {
+		sets = append(sets, "name = ?")
+		args = append(args, *req.Name)
+	}
+
+	if req.BirthDate != nil {
+		sets = append(sets, "birth_date = ?")
+		args = append(args, *req.BirthDate)
+	}
+
+	if len(sets) == 0 {
+		return nil // or return an error
+	}
+
+	args = append(args, id)
+
+	query := "UPDATE actor SET " +
+		strings.Join(sets, ", ") +
+		" WHERE id = ?"
+
+	_, err := r.db.Exec(query, args...)
 
 	return err
 }
