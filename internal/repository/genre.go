@@ -2,7 +2,9 @@ package repository
 
 import (
 	"database/sql"
+	"strings"
 
+	"movies-api/internal/dto"
 	"movies-api/internal/models"
 )
 
@@ -55,16 +57,33 @@ func (r *GenreRepository) GetByID(id int) (models.Genre, error) {
 	return genre, nil
 }
 
-func (r *GenreRepository) Create(genre models.Genre) error {
+func (r *GenreRepository) Create(req dto.CreateGenreRequest) error {
 	query := "INSERT INTO genre (name) VALUES (?)"
-	_, err := r.db.Exec(query, genre.Name)
+	_, err := r.db.Exec(query, req.Name)
 
 	return err
 }
 
-func (r *GenreRepository) Update(genre models.Genre) error {
-	query := "UPDATE genre SET name = ? WHERE id = ?"
-	_, err := r.db.Exec(query, genre.Name, genre.ID)
+func (r *GenreRepository) Update(id int, req dto.UpdateGenreRequest) error {
+	var sets []string
+	var args []any
+
+	if req.Name != nil {
+		sets = append(sets, "name = ?")
+		args = append(args, *req.Name)
+	}
+
+	if len(sets) == 0 {
+		return nil // or return an error
+	}
+
+	args = append(args, id)
+
+	query := "UPDATE genre SET " +
+		strings.Join(sets, ", ") +
+		" WHERE id = ?"
+
+	_, err := r.db.Exec(query, args...)
 
 	return err
 }

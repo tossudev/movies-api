@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"movies-api/internal/dto"
-	"movies-api/internal/models"
 	"movies-api/internal/response"
 	"movies-api/internal/service"
 )
@@ -60,13 +59,13 @@ func (h *ActorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
-	actor, err := h.decodeQuery(r)
+	req, err := h.decodeCreateRequest(r)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
 		return
 	}
 
-	if err := h.service.Create(actor); err != nil {
+	if err := h.service.Create(req); err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed creating actor")
 		return
 	}
@@ -74,10 +73,8 @@ func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, http.StatusOK, "Successfully added actor")
 }
 
-// Get ID from PathValue and rest from the query
-// /api/{entity}/{id}
 func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
-	actor, err := h.decodeQuery(r)
+	req, err := h.decodeUpdateRequest(r)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
 		return
@@ -87,10 +84,9 @@ func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
 		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
 		return
 	}
-	actor.ID = id
 
-	if err := h.service.Update(actor); err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed creating actor")
+	if err := h.service.Update(id, req); err != nil {
+		response.WriteError(w, http.StatusInternalServerError, "Failed updating actor")
 		return
 	}
 
@@ -112,10 +108,18 @@ func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, http.StatusOK, "Successfull deleted actor")
 }
 
-func (h *ActorHandler) decodeQuery(r *http.Request) (models.Actor, error) {
+func (h *ActorHandler) decodeCreateRequest(r *http.Request) (dto.CreateActorRequest, error) {
 	decoder := json.NewDecoder(r.Body)
-	var actor models.Actor
-	err := decoder.Decode(&actor)
+	var req dto.CreateActorRequest
+	err := decoder.Decode(&req)
 
-	return actor, err
+	return req, err
+}
+
+func (h *ActorHandler) decodeUpdateRequest(r *http.Request) (dto.UpdateActorRequest, error) {
+	decoder := json.NewDecoder(r.Body)
+	var req dto.UpdateActorRequest
+	err := decoder.Decode(&req)
+
+	return req, err
 }

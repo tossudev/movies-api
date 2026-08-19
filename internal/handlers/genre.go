@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"movies-api/internal/dto"
-	"movies-api/internal/models"
 	"movies-api/internal/response"
 	"movies-api/internal/service"
 )
@@ -58,13 +57,13 @@ func (h *GenreHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GenreHandler) Create(w http.ResponseWriter, r *http.Request) {
-	genre, err := h.decodeQuery(r)
+	req, err := h.decodeCreateRequest(r)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
 		return
 	}
 
-	if err := h.service.Create(genre); err != nil {
+	if err := h.service.Create(req); err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed creating genre")
 		return
 	}
@@ -75,7 +74,7 @@ func (h *GenreHandler) Create(w http.ResponseWriter, r *http.Request) {
 // Get ID from PathValue and rest from the query
 // /api/{entity}/{id}
 func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
-	genre, err := h.decodeQuery(r)
+	req, err := h.decodeUpdateRequest(r)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Malformed query")
 		return
@@ -85,9 +84,8 @@ func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
 		response.WriteError(w, http.StatusInternalServerError, "Malformed ID")
 		return
 	}
-	genre.ID = id
 
-	if err := h.service.Update(genre); err != nil {
+	if err := h.service.Update(id, req); err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed creating genre")
 		return
 	}
@@ -110,10 +108,18 @@ func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, http.StatusOK, "Successfull deleted genre")
 }
 
-func (h *GenreHandler) decodeQuery(r *http.Request) (models.Genre, error) {
+func (h *GenreHandler) decodeUpdateRequest(r *http.Request) (dto.UpdateGenreRequest, error) {
 	decoder := json.NewDecoder(r.Body)
-	var genre models.Genre
-	err := decoder.Decode(&genre)
+	var req dto.UpdateGenreRequest
+	err := decoder.Decode(&req)
 
-	return genre, err
+	return req, err
+}
+
+func (h *GenreHandler) decodeCreateRequest(r *http.Request) (dto.CreateGenreRequest, error) {
+	decoder := json.NewDecoder(r.Body)
+	var req dto.CreateGenreRequest
+	err := decoder.Decode(&req)
+
+	return req, err
 }
