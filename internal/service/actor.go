@@ -24,8 +24,13 @@ func (s *ActorService) GetByID(id int) (models.Actor, error) {
 	return s.repo.GetByID(id)
 }
 
-func (s *ActorService) Create(req dto.CreateActorRequest) error {
-	return s.repo.Create(req)
+func (s *ActorService) Create(req dto.CreateActorRequest) (models.Actor, error) {
+	id, err := s.repo.Create(req)
+	if err != nil {
+		return models.Actor{}, err
+	}
+
+	return models.Actor{ID: id, Name: req.Name, BirthDate: req.BirthDate}, nil
 }
 
 func (s *ActorService) Update(id int, req dto.UpdateActorRequest) error {

@@ -57,11 +57,15 @@ func (r *GenreRepository) GetByID(id int) (models.Genre, error) {
 	return genre, nil
 }
 
-func (r *GenreRepository) Create(req dto.CreateGenreRequest) error {
+func (r *GenreRepository) Create(req dto.CreateGenreRequest) (int, error) {
 	query := "INSERT INTO genre (name) VALUES (?)"
-	_, err := r.db.Exec(query, req.Name)
+	result, err := r.db.Exec(query, req.Name)
+	if err != nil {
+		return 0, err
+	}
 
-	return err
+	id, err := result.LastInsertId()
+	return int(id), err
 }
 
 func (r *GenreRepository) Update(id int, req dto.UpdateGenreRequest) error {
@@ -90,9 +94,20 @@ func (r *GenreRepository) Update(id int, req dto.UpdateGenreRequest) error {
 
 func (r *GenreRepository) Delete(id int) error {
 	query := "DELETE FROM genre WHERE id = ?"
-	_, err := r.db.Exec(query, id)
+	result, err := r.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
 
-	return err
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (r *GenreRepository) CreateRelationship(genreID, movieID int) error {

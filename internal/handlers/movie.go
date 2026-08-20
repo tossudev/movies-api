@@ -6,20 +6,23 @@ import (
 	"movies-api/internal/dto"
 	"movies-api/internal/response"
 	"movies-api/internal/service"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type MovieHandler struct {
-	service *service.MovieService
+	service   *service.MovieService
+	validator *validator.Validate
 }
 
-func NewMovieHandler(service *service.MovieService) *MovieHandler {
-	return &MovieHandler{service: service}
+func NewMovieHandler(service *service.MovieService, validator *validator.Validate) *MovieHandler {
+	return &MovieHandler{service: service, validator: validator}
 }
 
 func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	movies, err := h.service.GetAll()
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "failed to retrieve movies")
+		response.WriteError(w, http.StatusInternalServerError, "Failed to retrieve movies")
 		return
 	}
 

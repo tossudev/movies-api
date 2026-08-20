@@ -24,8 +24,13 @@ func (s *GenreService) GetByID(id int) (models.Genre, error) {
 	return s.repo.GetByID(id)
 }
 
-func (s *GenreService) Create(req dto.CreateGenreRequest) error {
-	return s.repo.Create(req)
+func (s *GenreService) Create(req dto.CreateGenreRequest) (models.Genre, error) {
+	id, err := s.repo.Create(req)
+	if err != nil {
+		return models.Genre{}, err
+	}
+
+	return models.Genre{ID: id, Name: req.Name}, nil
 }
 
 func (s *GenreService) Update(id int, req dto.UpdateGenreRequest) error {
