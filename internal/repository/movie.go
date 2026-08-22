@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 
+	"movies-api/internal/dto"
 	"movies-api/internal/models"
 )
 
@@ -63,11 +64,15 @@ func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 	return movie, nil
 }
 
-func (r *MovieRepository) Create(movie models.Movie) error {
+func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 	query := "INSERT INTO movie (title, release_year, duration) VALUES (?, ?, ?)"
-	_, err := r.db.Exec(query, movie.Title, movie.Releaseyear, movie.Duration)
+	result, err := r.db.Exec(query, req.Title, req.ReleaseYear, req.Duration)
+	if err != nil {
+		return 0, err
+	}
 
-	return err
+	id, err := result.LastInsertId()
+	return int(id), err
 }
 
 func (r *MovieRepository) Update(movie models.Movie) error {
@@ -78,9 +83,7 @@ func (r *MovieRepository) Update(movie models.Movie) error {
 }
 
 func (r *MovieRepository) Delete(id int) error {
-	query := "DELETE FROM movie WHERE id = ?"
-	_, err := r.db.Exec(query, id)
-
+	_, err := r.db.Exec("DELETE FROM movie WHERE id = ?", id)
 	return err
 }
 
