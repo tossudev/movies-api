@@ -65,14 +65,40 @@ func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 }
 
 func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
-	query := "INSERT INTO movie (title, release_year, duration) VALUES (?, ?, ?)"
-	result, err := r.db.Exec(query, req.Title, req.ReleaseYear, req.Duration)
+	tx, err := r.db.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	result, err := tx.Exec("INSERT INTO movie (title, release_year, duration) VALUES (?, ?, ?)", req.Title, req.ReleaseYear, req.Duration)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := result.LastInsertId()
-	return int(id), err
+	id64, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	movieID := int(id64)
+
+	for _, genreID := range req.GenreIDs {
+		if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
+			return 0, err
+		}
+	}
+
+	for _, actorID := range req.ActorIDs {
+		if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {
+			return 0, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return movieID, nil
 }
 
 func (r *MovieRepository) Update(movie models.Movie) error {
