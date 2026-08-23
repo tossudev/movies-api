@@ -25,7 +25,7 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 	movies := []models.Movie{}
 	for rows.Next() {
 		var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
 			return nil, err // TODO: concretize error
 		}
 
@@ -57,7 +57,7 @@ func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 
 	row := r.db.QueryRow(query, id)
 
-	if err := row.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
+	if err := row.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
 		return movie, err // TODO: concretize error
 	}
 
@@ -77,7 +77,7 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 
 func (r *MovieRepository) Update(movie models.Movie) error {
 	query := "UPDATE movie SET title = ?, release_year = ?, duration = ? WHERE id = ?"
-	_, err := r.db.Exec(query, movie.Title, movie.Releaseyear, movie.Duration, movie.ID)
+	_, err := r.db.Exec(query, movie.Title, movie.ReleaseYear, movie.Duration, movie.ID)
 
 	return err
 }

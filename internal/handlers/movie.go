@@ -77,7 +77,7 @@ func toMovieResponse(model models.Movie) dto.MovieResponse {
 	return dto.MovieResponse{
 		ID:          model.ID,
 		Title:       model.Title,
-		ReleaseYear: model.Releaseyear,
+		ReleaseYear: model.ReleaseYear,
 		Duration:    model.Duration,
 		Actors:      model.Actors,
 		Genres:      model.Genres,

@@ -139,7 +139,7 @@ func (r *ActorRepository) GetMovies(actorID int) ([]models.Movie, error) {
 	movies := []models.Movie{}
 	for rows.Next() {
 		var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
 			return nil, err // TODO: concretize error
 		}
 		movies = append(movies, movie)

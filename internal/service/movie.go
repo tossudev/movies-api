@@ -30,5 +30,5 @@ func (s *MovieService) Create(req dto.CreateMovieRequest) (models.Movie, error) 
 		return models.Movie{}, err
 	}
 
-	return models.Movie{ID: id, Title: req.Title, Releaseyear: req.ReleaseYear, Duration: req.Duration}, nil
+	return models.Movie{ID: id, Title: req.Title, ReleaseYear: req.ReleaseYear, Duration: req.Duration}, nil
 }
