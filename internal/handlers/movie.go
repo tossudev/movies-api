@@ -109,3 +109,18 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	response.WriteJSON(w, http.StatusOK, "Successfully updated movie")
 }
+
+func (h *MovieHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, err := getID(r)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	if err := h.service.Delete(id); err != nil {
+		response.WriteError(w, http.StatusNotFound, "Failed deleting movie")
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, "Successfully deleted movie")
+}

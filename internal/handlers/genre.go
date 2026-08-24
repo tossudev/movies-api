@@ -121,5 +121,5 @@ func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	response.WriteJSON(w, http.StatusOK, "Successfully deleted genre")
 }

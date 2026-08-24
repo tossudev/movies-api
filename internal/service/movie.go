@@ -36,3 +36,7 @@ func (s *MovieService) Create(req dto.CreateMovieRequest) (models.Movie, error) 
 func (s *MovieService) Update(id int, req dto.UpdateMovieRequest) error {
 	return s.repo.Update(id, req)
 }
+
+func (s *MovieService) Delete(id int) error {
+	return s.repo.Delete(id)
+}

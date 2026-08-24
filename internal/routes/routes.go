@@ -42,11 +42,11 @@ func New(database *sql.DB) http.Handler {
 	mux.HandleFunc("DELETE /api/actors/{id}", actorHandler.Delete) // Delete actor by id.
 
 	// Movies
-	mux.HandleFunc("GET /api/movies", movieHandler.GetAll)        // Retrieve all movies.
-	mux.HandleFunc("GET /api/movies/{id}", movieHandler.GetByID)  // Retrieve movie by id.
-	mux.HandleFunc("POST /api/movies", movieHandler.Create)       // Create new movie.
-	mux.HandleFunc("PATCH /api/movies/{id}", movieHandler.Update) // Partially update movie by id.
-	// mux.HandleFunc("DELETE /api/movies/", ) // Delete actor by id.
+	mux.HandleFunc("GET /api/movies", movieHandler.GetAll)         // Retrieve all movies.
+	mux.HandleFunc("GET /api/movies/{id}", movieHandler.GetByID)   // Retrieve movie by id.
+	mux.HandleFunc("POST /api/movies", movieHandler.Create)        // Create new movie.
+	mux.HandleFunc("PATCH /api/movies/{id}", movieHandler.Update)  // Partially update movie by id.
+	mux.HandleFunc("DELETE /api/movies/{id}", movieHandler.Delete) // Delete movie by id.
 
 	// Genres
 	mux.HandleFunc("GET /api/genres", genreHandler.GetAll)         // Retrieve all genres.
