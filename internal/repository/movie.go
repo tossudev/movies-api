@@ -80,7 +80,7 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 	movieID := int(id64)
 
 	for _, genreID := range req.GenreIDs {
-		if !r.Exists("genre", genreID) {
+		if !r.GenreExists(genreID) {
 			return 0, fmt.Errorf(IDNotFound, "genre", genreID)
 		}
 
@@ -90,7 +90,7 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 	}
 
 	for _, actorID := range req.ActorIDs {
-		if !r.Exists("actor", actorID) {
+		if !r.ActorExists(actorID) {
 			return 0, fmt.Errorf(IDNotFound, "actor", actorID)
 		}
 
@@ -150,7 +150,7 @@ func (r *MovieRepository) Update(id int, req dto.UpdateMovieRequest) error {
 	movieID := int(id64)
 
 	for _, genreID := range req.GenreIDs {
-		if !r.Exists("genre", genreID) {
+		if !r.GenreExists(genreID) {
 			return fmt.Errorf(IDNotFound, "genre", genreID)
 		}
 
@@ -160,7 +160,7 @@ func (r *MovieRepository) Update(id int, req dto.UpdateMovieRequest) error {
 	}
 
 	for _, actorID := range req.ActorIDs {
-		if !r.Exists("actor", actorID) {
+		if !r.ActorExists(actorID) {
 			return fmt.Errorf(IDNotFound, "actor", actorID)
 		}
 
@@ -224,7 +224,10 @@ func (r *MovieRepository) getGenres(movieID int) ([]models.Genre, error) {
 	return genres, nil
 }
 
-func (r *MovieRepository) Exists(table string, id int) bool {
-	fmt.Println(r.db.QueryRow("SELECT * FROM ? WHERE id = ?", table, id).Err())
-	return r.db.QueryRow("SELECT * FROM ? WHERE id = ?", table, id).Err() == nil
+func (r *MovieRepository) GenreExists(id int) bool {
+	return r.db.QueryRow("SELECT * FROM genre WHERE id = ?", id).Err() == nil
+}
+
+func (r *MovieRepository) ActorExists(id int) bool {
+	return r.db.QueryRow("SELECT * FROM actor WHERE id = ?", id).Err() == nil
 }
