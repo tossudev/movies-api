@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
@@ -46,11 +47,6 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 	return movies, nil
 }
 
-func (r *MovieRepository) Exists(id int) bool {
-	_, err := r.GetByID(id)
-	return err != sql.ErrNoRows
-}
-
 func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 	var movie models.Movie
 	query := "SELECT * FROM movie WHERE id = ?;"
@@ -76,19 +72,27 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 		return 0, err
 	}
 
-	id64, err := result.LastInsertId()
+	id, err := result.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
-	movieID := int(id64)
+	movieID := int(id)
 
 	for _, genreID := range req.GenreIDs {
+		if !r.Exists("genre", genreID) {
+			return 0, fmt.Errorf(IDNotFound, "genre", genreID)
+		}
+
 		if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
 			return 0, err
 		}
 	}
 
 	for _, actorID := range req.ActorIDs {
+		if !r.Exists("actor", actorID) {
+			return 0, fmt.Errorf(IDNotFound, "actor", actorID)
+		}
+
 		if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {
 			return 0, err
 		}
@@ -157,4 +161,8 @@ func (r *MovieRepository) getGenres(movieID int) ([]models.Genre, error) {
 	}
 
 	return genres, nil
+}
+
+func (r *MovieRepository) Exists(table string, id int) bool {
+	return r.db.QueryRow("SELECT * FROM ? WHERE id = ?", table, id).Err() == nil
 }

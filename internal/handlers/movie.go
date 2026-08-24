@@ -66,7 +66,7 @@ func (h *MovieHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	movie, err := h.service.Create(req)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed creating movie")
+		response.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
