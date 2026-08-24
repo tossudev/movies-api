@@ -2,7 +2,10 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 
+	"movies-api/internal/dto"
 	"movies-api/internal/models"
 )
 
@@ -24,14 +27,14 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 	movies := []models.Movie{}
 	for rows.Next() {
 		var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
 			return nil, err // TODO: concretize error
 		}
 
-		if movie.Actors, err = r.getActors(movie.ID); err != nil {
+		if movie.Actors, err = r.GetActors(movie.ID); err != nil {
 			return nil, err
 		}
-		if movie.Genres, err = r.getGenres(movie.ID); err != nil {
+		if movie.Genres, err = r.GetGenres(movie.ID); err != nil {
 			return nil, err
 		}
 
@@ -45,46 +48,140 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 	return movies, nil
 }
 
-func (r *MovieRepository) Exists(id int) bool {
-	_, err := r.GetByID(id)
-	return err != sql.ErrNoRows
-}
-
 func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 	var movie models.Movie
 	query := "SELECT * FROM movie WHERE id = ?;"
 
 	row := r.db.QueryRow(query, id)
 
-	if err := row.Scan(&movie.ID, &movie.Title, &movie.Releaseyear, &movie.Duration); err != nil {
+	if err := row.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
 		return movie, err // TODO: concretize error
 	}
+
+	movie.Actors, _ = r.GetActors(movie.ID)
+	movie.Genres, _ = r.GetGenres(movie.ID)
 
 	return movie, nil
 }
 
-func (r *MovieRepository) Create(movie models.Movie) error {
-	query := "INSERT INTO movie (title, release_year, duration) VALUES (?, ?, ?)"
-	_, err := r.db.Exec(query, movie.Title, movie.Releaseyear, movie.Duration)
+func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
 
-	return err
+	result, err := tx.Exec("INSERT INTO movie (title, release_year, duration) VALUES (?, ?, ?)", req.Title, req.ReleaseYear, req.Duration)
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	movieID := int(id64)
+
+	for _, genreID := range req.GenreIDs {
+		if !r.GenreExists(genreID) {
+			return 0, fmt.Errorf(IDNotFound, "genre", genreID)
+		}
+
+		if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
+			return 0, err
+		}
+	}
+
+	for _, actorID := range req.ActorIDs {
+		if !r.ActorExists(actorID) {
+			return 0, fmt.Errorf(IDNotFound, "actor", actorID)
+		}
+
+		if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {
+			return 0, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return movieID, nil
 }
 
-func (r *MovieRepository) Update(movie models.Movie) error {
-	query := "UPDATE movie SET title = ?, release_year = ?, duration = ? WHERE id = ?"
-	_, err := r.db.Exec(query, movie.Title, movie.Releaseyear, movie.Duration, movie.ID)
+func (r *MovieRepository) Update(id int, req dto.UpdateMovieRequest) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
 
+	defer tx.Rollback()
+	var sets []string
+	var args []any
+
+	if req.Title != nil {
+		sets = append(sets, "title = ?")
+		args = append(args, *req.Title)
+	}
+
+	if req.ReleaseYear != nil {
+		sets = append(sets, "release_year = ?")
+		args = append(args, *req.ReleaseYear)
+	}
+
+	if req.Duration != nil {
+		sets = append(sets, "duration = ?")
+		args = append(args, *req.Duration)
+	}
+
+	if len(sets) == 0 {
+		return nil // or return an error
+	}
+
+	args = append(args, id)
+	query := "UPDATE movie SET " + strings.Join(sets, ", ") + " WHERE id = ?"
+
+	result, err := tx.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+
+	id64, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	movieID := int(id64)
+
+	for _, genreID := range req.GenreIDs {
+		if !r.GenreExists(genreID) {
+			return fmt.Errorf(IDNotFound, "genre", genreID)
+		}
+
+		if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
+			return err
+		}
+	}
+
+	for _, actorID := range req.ActorIDs {
+		if !r.ActorExists(actorID) {
+			return fmt.Errorf(IDNotFound, "actor", actorID)
+		}
+
+		if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit()
 	return err
 }
 
 func (r *MovieRepository) Delete(id int) error {
-	query := "DELETE FROM movie WHERE id = ?"
-	_, err := r.db.Exec(query, id)
-
+	_, err := r.db.Exec("DELETE FROM movie WHERE id = ?", id)
 	return err
 }
 
-func (r *MovieRepository) getActors(movieID int) ([]models.Actor, error) {
+func (r *MovieRepository) GetActors(movieID int) ([]models.Actor, error) {
 	rows, err := r.db.Query("SELECT * FROM actor WHERE id in (SELECT actor_id FROM movie_actors WHERE movie_id = ?)", movieID)
 	if err != nil {
 		return nil, err
@@ -107,7 +204,7 @@ func (r *MovieRepository) getActors(movieID int) ([]models.Actor, error) {
 	return actors, nil
 }
 
-func (r *MovieRepository) getGenres(movieID int) ([]models.Genre, error) {
+func (r *MovieRepository) GetGenres(movieID int) ([]models.Genre, error) {
 	rows, err := r.db.Query("SELECT * FROM genre WHERE id in (SELECT genre_id FROM movie_genres WHERE movie_id = ?)", movieID)
 	if err != nil {
 		return nil, err
@@ -128,4 +225,12 @@ func (r *MovieRepository) getGenres(movieID int) ([]models.Genre, error) {
 	}
 
 	return genres, nil
+}
+
+func (r *MovieRepository) GenreExists(id int) bool {
+	return r.db.QueryRow("SELECT * FROM genre WHERE id = ?", id).Err() == nil
+}
+
+func (r *MovieRepository) ActorExists(id int) bool {
+	return r.db.QueryRow("SELECT * FROM actor WHERE id = ?", id).Err() == nil
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"movies-api/internal/dto"
+	"movies-api/internal/models"
 	"movies-api/internal/response"
 	"movies-api/internal/service"
 
@@ -29,11 +30,7 @@ func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	res := make([]dto.ActorResponse, 0, len(actors))
 
 	for _, actor := range actors {
-		res = append(res, dto.ActorResponse{
-			ID:        actor.ID,
-			Name:      actor.Name,
-			BirthDate: actor.BirthDate,
-		})
+		res = append(res, toActorResponse(actor))
 	}
 
 	response.WriteJSON(w, http.StatusOK, res)
@@ -52,13 +49,7 @@ func (h *ActorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := dto.ActorResponse{
-		ID:        actor.ID,
-		Name:      actor.Name,
-		BirthDate: actor.BirthDate,
-	}
-
-	response.WriteJSON(w, http.StatusOK, res)
+	response.WriteJSON(w, http.StatusOK, toActorResponse(actor))
 }
 
 func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -79,11 +70,7 @@ func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.WriteJSON(w, http.StatusCreated, dto.ActorResponse{
-		ID:        actor.ID,
-		Name:      actor.Name,
-		BirthDate: actor.BirthDate,
-	})
+	response.WriteJSON(w, http.StatusCreated, toActorResponse(actor))
 }
 
 func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -125,4 +112,12 @@ func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func toActorResponse(model models.Actor) dto.ActorResponse {
+	return dto.ActorResponse{
+		ID:        model.ID,
+		Name:      model.Name,
+		BirthDate: model.BirthDate,
+	}
 }

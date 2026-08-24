@@ -14,6 +14,6 @@ func WriteJSON(w http.ResponseWriter, status int, data any) {
 	_ = json.NewEncoder(w).Encode(data)
 }
 
-func WriteError(w http.ResponseWriter, status int, message string) {
-	WriteJSON(w, status, dto.ErrorResponse{Error: message})
+func WriteError(w http.ResponseWriter, status int, err string) {
+	WriteJSON(w, status, dto.ErrorResponse{Error: err})
 }

@@ -3,7 +3,7 @@ package models
 type Movie struct {
 	ID          int
 	Title       string
-	Releaseyear int
+	ReleaseYear int
 	Duration    int
 	Actors      []Actor
 	Genres      []Genre
