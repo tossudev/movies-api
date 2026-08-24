@@ -117,7 +117,8 @@ func (h *MovieHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Delete(id); err != nil {
+	force := r.URL.Query().Get("force") == "true"
+	if err := h.service.Delete(id, force); err != nil {
 		response.WriteError(w, http.StatusNotFound, "Failed deleting movie")
 		return
 	}

@@ -31,10 +31,10 @@ func (r *MovieRepository) GetAll() ([]models.Movie, error) {
 			return nil, err // TODO: concretize error
 		}
 
-		if movie.Actors, err = r.getActors(movie.ID); err != nil {
+		if movie.Actors, err = r.GetActors(movie.ID); err != nil {
 			return nil, err
 		}
-		if movie.Genres, err = r.getGenres(movie.ID); err != nil {
+		if movie.Genres, err = r.GetGenres(movie.ID); err != nil {
 			return nil, err
 		}
 
@@ -178,7 +178,7 @@ func (r *MovieRepository) Delete(id int) error {
 	return err
 }
 
-func (r *MovieRepository) getActors(movieID int) ([]models.Actor, error) {
+func (r *MovieRepository) GetActors(movieID int) ([]models.Actor, error) {
 	rows, err := r.db.Query("SELECT * FROM actor WHERE id in (SELECT actor_id FROM movie_actors WHERE movie_id = ?)", movieID)
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func (r *MovieRepository) getActors(movieID int) ([]models.Actor, error) {
 	return actors, nil
 }
 
-func (r *MovieRepository) getGenres(movieID int) ([]models.Genre, error) {
+func (r *MovieRepository) GetGenres(movieID int) ([]models.Genre, error) {
 	rows, err := r.db.Query("SELECT * FROM genre WHERE id in (SELECT genre_id FROM movie_genres WHERE movie_id = ?)", movieID)
 	if err != nil {
 		return nil, err
