@@ -103,9 +103,9 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Update(id, req); err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed updating actor")
+		response.WriteError(w, http.StatusInternalServerError, "Failed updating movie")
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "Successfully updated actor")
+	response.WriteJSON(w, http.StatusOK, "Successfully updated movie")
 }
