@@ -83,3 +83,29 @@ func toMovieResponse(model models.Movie) dto.MovieResponse {
 		Genres:      model.Genres,
 	}
 }
+
+func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, err := getID(r)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	req, err := decodeRequest[dto.UpdateMovieRequest](r)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Malformed JSON")
+		return
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		response.WriteError(w, http.StatusBadRequest, "Invalid request")
+		return
+	}
+
+	if err := h.service.Update(id, req); err != nil {
+		response.WriteError(w, http.StatusInternalServerError, "Failed updating actor")
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, "Successfully updated actor")
+}
