@@ -58,6 +58,9 @@ func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 		return movie, err // TODO: concretize error
 	}
 
+	movie.Actors, _ = r.GetActors(movie.ID)
+	movie.Genres, _ = r.GetGenres(movie.ID)
+
 	return movie, nil
 }
 
