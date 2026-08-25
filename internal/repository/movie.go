@@ -32,9 +32,14 @@ func (r *MovieRepository) GetAll(page, size int) ([]models.Movie, error) {
 	return r.getMoviesFromRows(rows)
 }
 
-func (r *MovieRepository) Search(query string) ([]models.Movie, error) {
-	query = "%" + query + "%"
-	rows, err := r.db.Query("SELECT * FROM movie WHERE title LIKE ?", query)
+func (r *MovieRepository) Search(query string, page, size int) ([]models.Movie, error) {
+	pagination, args := "", []any{"%" + query + "%"}
+	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
+		pagination = " LIMIT ? OFFSET ?"
+		args = append(args, size, page*size-size)
+	}
+
+	rows, err := r.db.Query("SELECT * FROM movie WHERE title LIKE ?"+pagination, args...)
 	if err != nil {
 		return nil, err
 	}
