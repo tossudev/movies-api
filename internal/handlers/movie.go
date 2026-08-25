@@ -44,9 +44,14 @@ func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MovieHandler) Search(w http.ResponseWriter, r *http.Request) {
+	page, size, err := getPagination(r)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	query := strings.TrimSpace(r.URL.Query().Get("title"))
 
-	movies, err := h.service.Search(query)
+	movies, err := h.service.Search(query, page, size)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
