@@ -17,8 +17,14 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 	return &MovieRepository{db: db}
 }
 
-func (r *MovieRepository) GetAll() ([]models.Movie, error) {
-	rows, err := r.db.Query("SELECT * FROM movie")
+func (r *MovieRepository) GetAll(page, size int) ([]models.Movie, error) {
+	pagination, args := "", []any{}
+	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
+		pagination = " LIMIT ? OFFSET ?"
+		args = []any{size, page*size - size}
+	}
+
+	rows, err := r.db.Query("SELECT * FROM movie"+pagination, args...)
 	if err != nil {
 		return nil, err
 	}

@@ -16,8 +16,8 @@ func NewActorService(repo *repository.ActorRepository) *ActorService {
 	}
 }
 
-func (s *ActorService) GetAll() ([]models.Actor, error) {
-	return s.repo.GetAll()
+func (s *ActorService) GetAll(page, size int) ([]models.Actor, error) {
+	return s.repo.GetAll(page, size)
 }
 
 func (s *ActorService) GetByID(id int) (models.Actor, error) {

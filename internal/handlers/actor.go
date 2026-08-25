@@ -21,14 +21,19 @@ func NewActorHandler(service *service.ActorService, validator *validator.Validat
 }
 
 func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	actors, err := h.service.GetAll()
+	page, size, err := getPagination(r)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed to retrieve actors")
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	actors, err := h.service.GetAll(page, size)
+	if err != nil {
+		response.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	res := make([]dto.ActorResponse, 0, len(actors))
-
 	for _, actor := range actors {
 		res = append(res, toActorResponse(actor))
 	}

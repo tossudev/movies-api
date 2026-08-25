@@ -16,8 +16,8 @@ func NewGenreService(repo *repository.GenreRepository) *GenreService {
 	}
 }
 
-func (s *GenreService) GetAll() ([]models.Genre, error) {
-	return s.repo.GetAll()
+func (s *GenreService) GetAll(page, size int) ([]models.Genre, error) {
+	return s.repo.GetAll(page, size)
 }
 
 func (s *GenreService) GetByID(id int) (models.Genre, error) {
