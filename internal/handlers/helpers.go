@@ -7,11 +7,6 @@ import (
 	"strconv"
 )
 
-type Pagination struct {
-	page   int
-	offset int
-}
-
 func decodeRequest[T any](r *http.Request) (req T, err error) {
 	return req, json.NewDecoder(r.Body).Decode(&req)
 }

@@ -20,7 +20,7 @@ func (r *ActorRepository) GetAll(page, size int) ([]models.Actor, error) {
 	pagination, args := "", []any{}
 	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
 		pagination = " LIMIT ? OFFSET ?"
-		args = []any{size, page * size}
+		args = []any{size, page*size - size}
 	}
 
 	rows, err := r.db.Query("SELECT * FROM actor"+pagination, args...)

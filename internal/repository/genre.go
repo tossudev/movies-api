@@ -16,8 +16,14 @@ func NewGenreRepository(db *sql.DB) *GenreRepository {
 	return &GenreRepository{db: db}
 }
 
-func (r *GenreRepository) GetAll() ([]models.Genre, error) {
-	rows, err := r.db.Query("SELECT * FROM genre")
+func (r *GenreRepository) GetAll(page, size int) ([]models.Genre, error) {
+	pagination, args := "", []any{}
+	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
+		pagination = " LIMIT ? OFFSET ?"
+		args = []any{size, page*size - size}
+	}
+
+	rows, err := r.db.Query("SELECT * FROM genre"+pagination, args...)
 	if err != nil {
 		return nil, err
 	}

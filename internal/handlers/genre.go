@@ -20,7 +20,13 @@ func NewGenreHandler(service *service.GenreService, validator *validator.Validat
 }
 
 func (h *GenreHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	genres, err := h.service.GetAll()
+	page, size, err := getPagination(r)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	genres, err := h.service.GetAll(page, size)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed to retrieve genres")
 		return

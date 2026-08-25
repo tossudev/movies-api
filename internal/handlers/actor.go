@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"movies-api/internal/dto"
@@ -23,7 +22,6 @@ func NewActorHandler(service *service.ActorService, validator *validator.Validat
 
 func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	page, size, err := getPagination(r)
-	fmt.Println(page, size)
 	if err != nil {
 		response.WriteError(w, http.StatusBadRequest, err.Error())
 		return
