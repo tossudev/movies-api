@@ -16,8 +16,15 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 	return &ActorRepository{db: db}
 }
 
-func (r *ActorRepository) GetAll() ([]models.Actor, error) {
-	rows, err := r.db.Query("SELECT * FROM actor")
+func (r *ActorRepository) GetAll(page, size int) ([]models.Actor, error) {
+	pagination, args := "", []any{}
+	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
+		pagination = " LIMIT ? OFFSET ?"
+		args = []any{size, page*size - size}
+	}
+
+	rows, err := r.db.Query("SELECT * FROM actor"+pagination, args...)
+
 	if err != nil {
 		return nil, err
 	}
@@ -88,10 +95,7 @@ func (r *ActorRepository) Update(id int, req dto.UpdateActorRequest) error {
 
 	args = append(args, id)
 
-	query := "UPDATE actor SET " +
-		strings.Join(sets, ", ") +
-		" WHERE id = ?"
-
+	query := "UPDATE actor SET " + strings.Join(sets, ", ") + " WHERE id = ?"
 	_, err := r.db.Exec(query, args...)
 
 	return err

@@ -21,7 +21,13 @@ func NewMovieHandler(service *service.MovieService, validator *validator.Validat
 }
 
 func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	movies, err := h.service.GetAll()
+	page, size, err := getPagination(r)
+	if err != nil {
+		response.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	movies, err := h.service.GetAll(page, size)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed to retrieve movies")
 		return
