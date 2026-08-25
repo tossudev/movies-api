@@ -22,6 +22,13 @@ func (s *MovieService) GetAll() ([]models.Movie, error) {
 	return s.repo.GetAll()
 }
 
+func (s *MovieService) Search(query string) ([]models.Movie, error) {
+	if len(query) == 0 {
+		return nil, errors.New("Empty search")
+	}
+	return s.repo.Search(query)
+}
+
 func (s *MovieService) GetByID(id int) (models.Movie, error) {
 	return s.repo.GetByID(id)
 }

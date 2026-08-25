@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
@@ -24,6 +25,24 @@ func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	movies, err := h.service.GetAll()
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, "Failed to retrieve movies")
+		return
+	}
+
+	res := make([]dto.MovieResponse, 0, len(movies))
+
+	for _, movie := range movies {
+		res = append(res, toMovieResponse(movie))
+	}
+
+	response.WriteJSON(w, http.StatusOK, res)
+}
+
+func (h *MovieHandler) Search(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("title"))
+
+	movies, err := h.service.Search(query)
+	if err != nil {
+		response.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
