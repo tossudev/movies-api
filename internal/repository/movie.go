@@ -29,29 +29,17 @@ func (r *MovieRepository) GetAll(page, size int) ([]models.Movie, error) {
 		return nil, err
 	}
 	defer rows.Close()
+	return r.getMoviesFromRows(rows)
+}
 
-	movies := []models.Movie{}
-	for rows.Next() {
-		var movie models.Movie
-		if err := rows.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
-			return nil, err // TODO: concretize error
-		}
-
-		if movie.Actors, err = r.GetActors(movie.ID); err != nil {
-			return nil, err
-		}
-		if movie.Genres, err = r.GetGenres(movie.ID); err != nil {
-			return nil, err
-		}
-
-		movies = append(movies, movie)
+func (r *MovieRepository) Search(query string) ([]models.Movie, error) {
+	query = "%" + query + "%"
+	rows, err := r.db.Query("SELECT * FROM movie WHERE title LIKE ?", query)
+	if err != nil {
+		return nil, err
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err // TODO: concretize error
-	}
-
-	return movies, nil
+	defer rows.Close()
+	return r.getMoviesFromRows(rows)
 }
 
 func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
@@ -239,4 +227,30 @@ func (r *MovieRepository) GenreExists(id int) bool {
 
 func (r *MovieRepository) ActorExists(id int) bool {
 	return r.db.QueryRow("SELECT * FROM actor WHERE id = ?", id).Err() == nil
+}
+
+func (r *MovieRepository) getMoviesFromRows(rows *sql.Rows) ([]models.Movie, error) {
+	var err error
+	movies := []models.Movie{}
+	for rows.Next() {
+		var movie models.Movie
+		if err := rows.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
+			return nil, err // TODO: concretize error
+		}
+
+		if movie.Actors, err = r.GetActors(movie.ID); err != nil {
+			return nil, err
+		}
+		if movie.Genres, err = r.GetGenres(movie.ID); err != nil {
+			return nil, err
+		}
+
+		movies = append(movies, movie)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err // TODO: concretize error
+	}
+
+	return movies, nil
 }
