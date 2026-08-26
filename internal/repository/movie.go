@@ -17,14 +17,29 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 	return &MovieRepository{db: db}
 }
 
-func (r *MovieRepository) GetAll(page, size int) ([]models.Movie, error) {
-	pagination, args := "", []any{}
+func (r *MovieRepository) GetAll(page, size int, filters map[string]string) ([]models.Movie, error) {
+	clauses, args := "", []any{}
 	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
-		pagination = " LIMIT ? OFFSET ?"
+		clauses = " LIMIT ? OFFSET ?"
 		args = []any{size, page*size - size}
 	}
 
-	rows, err := r.db.Query("SELECT * FROM movie"+pagination, args...)
+	if value, ok := filters["year"]; ok {
+		clauses += " AND release_year = ?"
+		args = append(args, value)
+	}
+	if value, ok := filters["actor"]; ok {
+		clauses += " AND ? in (SELECT actor_id FROM movie_actors WHERE movie_id = m.id)"
+		args = append(args, value)
+	}
+	if value, ok := filters["genre"]; ok {
+		clauses += " AND ? in (SELECT genre_id FROM movie_genres WHERE movie_id = m.id)"
+		args = append(args, value)
+	}
+
+	clauses = strings.Replace(clauses, "AND", "WHERE", 1)
+
+	rows, err := r.db.Query("SELECT * FROM movie AS m"+clauses, args...)
 	if err != nil {
 		return nil, fmt.Errorf("query movies: %w", err)
 	}
@@ -33,13 +48,13 @@ func (r *MovieRepository) GetAll(page, size int) ([]models.Movie, error) {
 }
 
 func (r *MovieRepository) Search(query string, page, size int) ([]models.Movie, error) {
-	pagination, args := "", []any{"%" + query + "%"}
-	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
-		pagination = " LIMIT ? OFFSET ?"
+	clauses, args := "", []any{"%" + query + "%"}
+	if size != 0 { // Checks whetever clauses exists or not, no other possibility of size being 0.
+		clauses = " LIMIT ? OFFSET ?"
 		args = append(args, size, page*size-size)
 	}
 
-	rows, err := r.db.Query("SELECT * FROM movie WHERE title LIKE ?"+pagination, args...)
+	rows, err := r.db.Query("SELECT * FROM movie WHERE title LIKE ?"+clauses, args...)
 	if err != nil {
 		return nil, fmt.Errorf("search movies: %w", err)
 	}

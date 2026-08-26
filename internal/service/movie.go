@@ -18,8 +18,8 @@ func NewMovieService(repo *repository.MovieRepository) *MovieService {
 	}
 }
 
-func (s *MovieService) GetAll(page, size int) ([]models.Movie, error) {
-	return s.repo.GetAll(page, size)
+func (s *MovieService) GetAll(page, size int, filters map[string]string) ([]models.Movie, error) {
+	return s.repo.GetAll(page, size, filters)
 }
 
 func (s *MovieService) Search(query string, page, size int) ([]models.Movie, error) {
@@ -31,6 +31,10 @@ func (s *MovieService) Search(query string, page, size int) ([]models.Movie, err
 
 func (s *MovieService) GetByID(id int) (models.Movie, error) {
 	return s.repo.GetByID(id)
+}
+
+func (s *MovieService) GetActors(id int) ([]models.Actor, error) {
+	return s.repo.GetActors(id)
 }
 
 func (s *MovieService) Create(req dto.CreateMovieRequest) (models.Movie, error) {
