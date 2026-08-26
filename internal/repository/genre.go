@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"movies-api/internal/dto"
@@ -25,7 +26,7 @@ func (r *GenreRepository) GetAll(page, size int) ([]models.Genre, error) {
 
 	rows, err := r.db.Query("SELECT * FROM genre"+pagination, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query genres: %w", err)
 	}
 	defer rows.Close()
 
@@ -33,21 +34,16 @@ func (r *GenreRepository) GetAll(page, size int) ([]models.Genre, error) {
 	for rows.Next() {
 		var genre models.Genre
 		if err := rows.Scan(&genre.ID, &genre.Name); err != nil {
-			return nil, err // TODO: concretize error
+			return nil, fmt.Errorf("scan genre row: %w", err)
 		}
 		genres = append(genres, genre)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err // TODO: concretize error
+		return nil, fmt.Errorf("iterate genres: %w", err)
 	}
 
 	return genres, nil
-}
-
-func (r *GenreRepository) Exists(id int) bool {
-	_, err := r.GetByID(id)
-	return err != sql.ErrNoRows
 }
 
 func (r *GenreRepository) GetByID(id int) (models.Genre, error) {
@@ -57,7 +53,7 @@ func (r *GenreRepository) GetByID(id int) (models.Genre, error) {
 	row := r.db.QueryRow(query, id)
 
 	if err := row.Scan(&genre.ID, &genre.Name); err != nil {
-		return genre, err // TODO: concretize error
+		return genre, fmt.Errorf("scan genre: %w", err)
 	}
 
 	return genre, nil
@@ -67,11 +63,14 @@ func (r *GenreRepository) Create(req dto.CreateGenreRequest) (int, error) {
 	query := "INSERT INTO genre (name) VALUES (?)"
 	result, err := r.db.Exec(query, req.Name)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("insert genre: %w", err)
 	}
 
 	id, err := result.LastInsertId()
-	return int(id), err
+	if err != nil {
+		return 0, fmt.Errorf("get created genre id: %w", err)
+	}
+	return int(id), nil
 }
 
 func (r *GenreRepository) Update(id int, req dto.UpdateGenreRequest) error {
@@ -93,21 +92,31 @@ func (r *GenreRepository) Update(id int, req dto.UpdateGenreRequest) error {
 		strings.Join(sets, ", ") +
 		" WHERE id = ?"
 
-	_, err := r.db.Exec(query, args...)
+	result, err := r.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("update genre: %w", err)
+	}
 
-	return err
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check updated genre rows: %w", err)
+	} else if rows == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (r *GenreRepository) Delete(id int) error {
 	query := "DELETE FROM genre WHERE id = ?"
 	result, err := r.db.Exec(query, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete genre: %w", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("check deleted genre rows: %w", err)
 	}
 	if rows == 0 {
 		return sql.ErrNoRows
@@ -133,7 +142,7 @@ func (r *GenreRepository) DeleteRelationship(genreID, movieID int) error {
 func (r *GenreRepository) GetMovies(genreID int) ([]models.Movie, error) {
 	rows, err := r.db.Query("SELECT * FROM movie WHERE id in (SELECT movie_id FROM movie_genres WHERE genre_id = ?)", genreID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query genre movies: %w", err)
 	}
 	defer rows.Close()
 
@@ -141,13 +150,13 @@ func (r *GenreRepository) GetMovies(genreID int) ([]models.Movie, error) {
 	for rows.Next() {
 		var movie models.Movie
 		if err := rows.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
-			return nil, err // TODO: concretize error
+			return nil, fmt.Errorf("scan genre movie row: %w", err)
 		}
 		movies = append(movies, movie)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err // TODO: concretize error
+		return nil, fmt.Errorf("iterate genre movies: %w", err)
 	}
 
 	return movies, nil

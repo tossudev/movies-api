@@ -14,7 +14,7 @@ func decodeRequest[T any](r *http.Request) (req T, err error) {
 func getID(r *http.Request) (int, error) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id <= 0 {
-		return -1, errors.New("Invalid ID")
+		return -1, errors.New("invalid id")
 	}
 
 	return id, nil
@@ -25,25 +25,29 @@ func getPagination(r *http.Request) (page int, size int, err error) {
 	pageStr, sizeStr := queries.Get("page"), queries.Get("size")
 
 	// Catch existence
-	if len(pageStr) == 0 && len(sizeStr) != 0 || len(sizeStr) == 0 && len(sizeStr) != 0 {
-		return -1, -1, errors.New("bad request")
+	if (pageStr == "") != (sizeStr == "") {
+		return -1, -1, errors.New("page and size must be provided together")
 	} else if len(pageStr) == 0 && len(sizeStr) == 0 {
 		return 0, 0, nil
 	}
 
 	page, err = strconv.Atoi(pageStr)
 	if err != nil {
-		return -1, -1, errors.New("invalid pagination: poor page value")
+		return -1, -1, errors.New("invalid page")
 	}
 
 	size, err = strconv.Atoi(sizeStr)
 	if err != nil {
-		return -1, -1, errors.New("invalid pagination: poor size value")
+		return -1, -1, errors.New("invalid size")
 	}
 
 	// Catch invalids
-	if size < 1 || page < 0 {
-		return -1, -1, errors.New("invalid pagination: too small value")
+	if page < 1 {
+		return -1, -1, errors.New("page must be greater than zero")
+	}
+
+	if size < 1 {
+		return -1, -1, errors.New("size must be greater than zero")
 	}
 
 	return page, size, nil

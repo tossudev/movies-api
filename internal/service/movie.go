@@ -47,14 +47,5 @@ func (s *MovieService) Update(id int, req dto.UpdateMovieRequest) error {
 }
 
 func (s *MovieService) Delete(id int, force bool) error {
-	if !force {
-		if _, err := s.repo.GetActors(id); err == nil {
-			return errors.New("Couldn't delete movie")
-		}
-		if _, err := s.repo.GetGenres(id); err == nil {
-			return errors.New("Couldn't delete movie")
-		}
-	}
-
 	return s.repo.Delete(id)
 }

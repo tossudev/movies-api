@@ -1,10 +1,15 @@
 package service
 
 import (
+	"errors"
+	"fmt"
+
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
 	"movies-api/internal/repository"
 )
+
+var ErrAssociatedMovies = errors.New("genre has associated movies")
 
 type GenreService struct {
 	repo *repository.GenreRepository
@@ -37,6 +42,14 @@ func (s *GenreService) Update(id int, req dto.UpdateGenreRequest) error {
 	return s.repo.Update(id, req)
 }
 
-func (s *GenreService) Delete(id int) error {
+func (s *GenreService) Delete(id int, force bool) error {
+	if !force {
+		if movies, err := s.repo.GetMovies(id); err != nil {
+			return fmt.Errorf("query deleted genre's movies: %w", err)
+		} else if len(movies) > 0 {
+			return ErrAssociatedMovies
+		}
+	}
+
 	return s.repo.Delete(id)
 }
