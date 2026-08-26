@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
 	"movies-api/internal/repository"
@@ -37,6 +38,13 @@ func (s *ActorService) Update(id int, req dto.UpdateActorRequest) error {
 	return s.repo.Update(id, req)
 }
 
-func (s *ActorService) Delete(id int) error {
+func (s *ActorService) Delete(id int, force bool) error {
+	if !force {
+		if movies, err := s.repo.GetMovies(id); err != nil {
+			return fmt.Errorf("query deleted actor's movies: %w", err)
+		} else if len(movies) > 0 {
+			return fmt.Errorf("cannot delete actor because it has %d associated movies", len(movies))
+		}
+	}
 	return s.repo.Delete(id)
 }

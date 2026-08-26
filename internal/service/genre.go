@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
 	"movies-api/internal/repository"
@@ -37,6 +38,14 @@ func (s *GenreService) Update(id int, req dto.UpdateGenreRequest) error {
 	return s.repo.Update(id, req)
 }
 
-func (s *GenreService) Delete(id int) error {
+func (s *GenreService) Delete(id int, force bool) error {
+	if !force {
+		if movies, err := s.repo.GetMovies(id); err != nil {
+			return fmt.Errorf("query deleted genre's movies: %w", err)
+		} else if len(movies) > 0 {
+			return fmt.Errorf("cannot delete genre because it has %d associated movies", len(movies))
+		}
+	}
+
 	return s.repo.Delete(id)
 }

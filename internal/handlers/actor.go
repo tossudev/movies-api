@@ -131,7 +131,8 @@ func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Delete(id); err != nil {
+	force := r.URL.Query().Get("force") == "true"
+	if err := h.service.Delete(id, force); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor not found"))
 		} else {

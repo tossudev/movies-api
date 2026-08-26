@@ -122,10 +122,11 @@ func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Delete(id); err != nil {
+	force := r.URL.Query().Get("force") == "true"
+	if err := h.service.Delete(id, force); err != nil {
 		response.WriteError(w, http.StatusNotFound, "Failed deleting genre")
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "Successfully deleted genre")
+	w.WriteHeader(http.StatusNoContent)
 }
