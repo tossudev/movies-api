@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"fmt"
 
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
@@ -31,7 +32,21 @@ func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movies, err := h.service.GetAll(page, size)
+	filters := make(map[string]string)
+	
+	for key, values := range r.URL.Query() {
+		value := strings.TrimSpace(values[0])
+		switch key {
+		case "genre", "actor", "year":
+			filters[key] = value
+		default:
+			response.WriteJSON(w, http.StatusBadRequest, fmt.Sprintf("Invalid filter: %s", key))
+			return
+		}
+	}
+
+	movies, err := h.service.GetAll(page, size, filters)
+
 	if err != nil {
 		slog.ErrorContext(r.Context(), "failed to retrieve movies", "err", err)
 		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve movies"))

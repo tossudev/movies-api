@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"strings"
 	"database/sql"
 	"errors"
 	"log/slog"
@@ -30,7 +32,21 @@ func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actors, err := h.service.GetAll(page, size)
+	filters := make(map[string]string)
+
+	for key, values := range r.URL.Query() {
+		value := strings.TrimSpace(values[0])
+		switch key {
+		case "name", "birth_date":
+			filters[key] = value
+		default:
+			response.WriteJSON(w, http.StatusBadRequest, fmt.Sprintf("Invalid filter: %s", key))
+			return
+		}
+	}
+
+	actors, err := h.service.GetAll(page, size, filters)
+
 	if err != nil {
 		slog.ErrorContext(r.Context(), "failed to retrieve actors", "err", err)
 		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve actors"))
