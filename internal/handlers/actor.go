@@ -135,6 +135,8 @@ func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := h.service.Delete(id, force); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor not found"))
+		} else if errors.Is(err, service.ErrAssociatedMoviesActor) {
+			response.WriteJSON(w, http.StatusConflict, dto.Conflict("cannot delete actor because it has associated movies"))
 		} else {
 			slog.ErrorContext(r.Context(), "failed to delete actor", "err", err)
 			response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to delete actor"))

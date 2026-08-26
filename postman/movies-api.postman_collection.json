@@ -169,12 +169,12 @@
         },
         {
           "name": "Reject deleting associated actor",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 400', () => pm.response.to.have.status(400));"] } }],
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 409', () => pm.response.to.have.status(409));"] } }],
           "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/actors/{{movieActorID}}" }
         },
         {
           "name": "Reject deleting associated genre",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 400', () => pm.response.to.have.status(400));"] } }],
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status code is 409', () => pm.response.to.have.status(409));"] } }],
           "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/genres/{{movieGenreID}}" }
         },
         {

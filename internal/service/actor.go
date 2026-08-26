@@ -1,11 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
 	"movies-api/internal/repository"
 )
+
+var ErrAssociatedMoviesActor = errors.New("actor has associated movies")
 
 type ActorService struct {
 	repo *repository.ActorRepository
@@ -43,7 +46,7 @@ func (s *ActorService) Delete(id int, force bool) error {
 		if movies, err := s.repo.GetMovies(id); err != nil {
 			return fmt.Errorf("query deleted actor's movies: %w", err)
 		} else if len(movies) > 0 {
-			return fmt.Errorf("cannot delete actor because it has %d associated movies", len(movies))
+			return ErrAssociatedMoviesActor
 		}
 	}
 	return s.repo.Delete(id)

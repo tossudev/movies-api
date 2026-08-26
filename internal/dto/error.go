@@ -27,3 +27,10 @@ func NotFound(message string) *ErrorResponse {
 		Code:    http.StatusNotFound,
 	}
 }
+
+func Conflict(message string) *ErrorResponse {
+	return &ErrorResponse{
+		Message: message,
+		Code:    http.StatusConflict,
+	}
+}
