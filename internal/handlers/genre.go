@@ -22,7 +22,7 @@ func NewGenreHandler(service *service.GenreService, validator *validator.Validat
 func (h *GenreHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	page, size, err := getPagination(r)
 	if err != nil {
-		response.WriteError(w, http.StatusBadRequest, err.Error())
+		response.WriteJSON(w, err.Code, err)
 		return
 	}
 

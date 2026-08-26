@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
+	"log/slog"
 	"net/http"
 
 	"movies-api/internal/dto"
@@ -23,13 +26,14 @@ func NewActorHandler(service *service.ActorService, validator *validator.Validat
 func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	page, size, err := getPagination(r)
 	if err != nil {
-		response.WriteError(w, http.StatusBadRequest, err.Error())
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest(err.Error()))
 		return
 	}
 
 	actors, err := h.service.GetAll(page, size)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, err.Error())
+		slog.ErrorContext(r.Context(), "failed to retrieve actors", "err", err)
+		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve actors"))
 		return
 	}
 
@@ -44,13 +48,18 @@ func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *ActorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest(err.Error()))
 		return
 	}
 
 	actor, err := h.service.GetByID(id)
 	if err != nil {
-		response.WriteError(w, http.StatusNotFound, "Actor does not exist")
+		if errors.Is(err, sql.ErrNoRows) {
+			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor not found"))
+		} else {
+			slog.ErrorContext(r.Context(), "failed to retrieve actor", "err", err)
+			response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve actor"))
+		}
 		return
 	}
 
@@ -60,18 +69,19 @@ func (h *ActorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
 	req, err := decodeRequest[dto.CreateActorRequest](r)
 	if err != nil {
-		response.WriteError(w, http.StatusBadRequest, "Malformed JSON")
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("malformed json"))
 		return
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		response.WriteError(w, http.StatusBadRequest, "Invalid request")
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("invalid request"))
 		return
 	}
 
 	actor, err := h.service.Create(req)
 	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed creating actor")
+		slog.ErrorContext(r.Context(), "failed to create actor", "err", err)
+		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed creating actor"))
 		return
 	}
 
@@ -81,38 +91,53 @@ func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("invalid id"))
 		return
 	}
 
 	req, err := decodeRequest[dto.UpdateActorRequest](r)
 	if err != nil {
-		response.WriteError(w, http.StatusBadRequest, "Malformed JSON")
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("malformed json"))
+		return
+	}
+
+	if req.Name == nil && req.BirthDate == nil {
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("at least one field must be provided"))
 		return
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		response.WriteError(w, http.StatusBadRequest, "Invalid request")
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("invalid request"))
 		return
 	}
 
 	if err := h.service.Update(id, req); err != nil {
-		response.WriteError(w, http.StatusInternalServerError, "Failed updating actor")
+		if errors.Is(err, sql.ErrNoRows) {
+			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor not found"))
+		} else {
+			slog.ErrorContext(r.Context(), "failed to update actor", "err", err)
+			response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to update actor"))
+		}
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "Successfully updated actor")
+	response.WriteJSON(w, http.StatusOK, "successfully updated actor")
 }
 
 func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := getID(r)
 	if err != nil {
-		response.WriteError(w, http.StatusBadRequest, "Invalid ID")
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("invalid id"))
 		return
 	}
 
 	if err := h.service.Delete(id); err != nil {
-		response.WriteError(w, http.StatusNotFound, "Failed deleting actor")
+		if errors.Is(err, sql.ErrNoRows) {
+			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor not found"))
+		} else {
+			slog.ErrorContext(r.Context(), "failed to delete actor", "err", err)
+			response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to delete actor"))
+		}
 		return
 	}
 

@@ -3,8 +3,6 @@ package response
 import (
 	"encoding/json"
 	"net/http"
-
-	"movies-api/internal/dto"
 )
 
 func WriteJSON(w http.ResponseWriter, status int, data any) {
@@ -12,8 +10,4 @@ func WriteJSON(w http.ResponseWriter, status int, data any) {
 	w.WriteHeader(status)
 
 	_ = json.NewEncoder(w).Encode(data)
-}
-
-func WriteError(w http.ResponseWriter, status int, err string) {
-	WriteJSON(w, status, dto.ErrorResponse{Error: err})
 }

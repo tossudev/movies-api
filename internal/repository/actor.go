@@ -2,6 +2,8 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"strings"
 
 	"movies-api/internal/dto"
@@ -20,13 +22,12 @@ func (r *ActorRepository) GetAll(page, size int) ([]models.Actor, error) {
 	pagination, args := "", []any{}
 	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
 		pagination = " LIMIT ? OFFSET ?"
-		args = []any{size, page*size - size}
+		args = []any{size, (page - 1) * size}
 	}
 
 	rows, err := r.db.Query("SELECT * FROM actor"+pagination, args...)
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query actors: %w", err)
 	}
 	defer rows.Close()
 
@@ -34,21 +35,16 @@ func (r *ActorRepository) GetAll(page, size int) ([]models.Actor, error) {
 	for rows.Next() {
 		var actor models.Actor
 		if err := rows.Scan(&actor.ID, &actor.Name, &actor.BirthDate); err != nil {
-			return nil, err // TODO: concretize error
+			return nil, fmt.Errorf("scan actor row: %w", err)
 		}
 		actors = append(actors, actor)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err // TODO: concretize error
+		return nil, fmt.Errorf("iterate actors: %w", err)
 	}
 
 	return actors, nil
-}
-
-func (r *ActorRepository) Exists(id int) bool {
-	_, err := r.GetByID(id)
-	return err != sql.ErrNoRows
 }
 
 func (r *ActorRepository) GetByID(id int) (models.Actor, error) {
@@ -58,7 +54,7 @@ func (r *ActorRepository) GetByID(id int) (models.Actor, error) {
 	row := r.db.QueryRow(query, id)
 
 	if err := row.Scan(&actor.ID, &actor.Name, &actor.BirthDate); err != nil {
-		return actor, err // TODO: concretize error
+		return actor, fmt.Errorf("scan actor: %w", err)
 	}
 
 	return actor, nil
@@ -68,11 +64,15 @@ func (r *ActorRepository) Create(req dto.CreateActorRequest) (int, error) {
 	query := "INSERT INTO actor (name, birth_date) VALUES (?, ?)"
 	result, err := r.db.Exec(query, req.Name, req.BirthDate)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("insert actor: %w", err)
 	}
 
 	id, err := result.LastInsertId()
-	return int(id), err
+	if err != nil {
+		return 0, fmt.Errorf("get created actor id: %w", err)
+	}
+
+	return int(id), nil
 }
 
 func (r *ActorRepository) Update(id int, req dto.UpdateActorRequest) error {
@@ -90,28 +90,39 @@ func (r *ActorRepository) Update(id int, req dto.UpdateActorRequest) error {
 	}
 
 	if len(sets) == 0 {
-		return nil // or return an error
+		return errors.New("no fields to update")
 	}
 
 	args = append(args, id)
 
 	query := "UPDATE actor SET " + strings.Join(sets, ", ") + " WHERE id = ?"
-	_, err := r.db.Exec(query, args...)
+	result, err := r.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("update actor: %w", err)
+	}
 
-	return err
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check updated actor rows: %w", err)
+	} else if rows == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }
 
 func (r *ActorRepository) Delete(id int) error {
 	query := "DELETE FROM actor WHERE id = ?"
 	result, err := r.db.Exec(query, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete actor: %w", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("check deleted actor rows: %w", err)
 	}
+
 	if rows == 0 {
 		return sql.ErrNoRows
 	}
@@ -120,23 +131,23 @@ func (r *ActorRepository) Delete(id int) error {
 }
 
 func (r *ActorRepository) CreateRelationship(actorID, movieID int) error {
-	query := "INSERT INTO movie_actors VALUES (?, ?)"
-	_, err := r.db.Exec(query, movieID, actorID)
-
-	return err
+	if _, err := r.db.Exec("INSERT INTO movie_actors VALUES (?, ?)", movieID, actorID); err != nil {
+		return fmt.Errorf("create movie-actor relationship: %w", err)
+	}
+	return nil
 }
 
 func (r *ActorRepository) DeleteRelationship(actorID, movieID int) error {
-	query := "DELETE FROM movie_actors WHERE movie_id = ? AND actor_id = ?"
-	_, err := r.db.Exec(query, movieID, actorID)
-
-	return err
+	if _, err := r.db.Exec("DELETE FROM movie_actors WHERE movie_id = ? AND actor_id = ?", movieID, actorID); err != nil {
+		return fmt.Errorf("delete movie-actor relationship: %w", err)
+	}
+	return nil
 }
 
 func (r *ActorRepository) GetMovies(actorID int) ([]models.Movie, error) {
 	rows, err := r.db.Query("SELECT * FROM movie WHERE id in (SELECT movie_id FROM movie_actors WHERE actor_id = ?)", actorID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query actor movies: %w", err)
 	}
 	defer rows.Close()
 
@@ -144,13 +155,13 @@ func (r *ActorRepository) GetMovies(actorID int) ([]models.Movie, error) {
 	for rows.Next() {
 		var movie models.Movie
 		if err := rows.Scan(&movie.ID, &movie.Title, &movie.ReleaseYear, &movie.Duration); err != nil {
-			return nil, err // TODO: concretize error
+			return nil, fmt.Errorf("scan actor movie row: %w", err)
 		}
 		movies = append(movies, movie)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err // TODO: concretize error
+		return nil, fmt.Errorf("iterate actor movies: %w", err)
 	}
 
 	return movies, nil

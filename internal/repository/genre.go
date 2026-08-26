@@ -45,11 +45,6 @@ func (r *GenreRepository) GetAll(page, size int) ([]models.Genre, error) {
 	return genres, nil
 }
 
-func (r *GenreRepository) Exists(id int) bool {
-	_, err := r.GetByID(id)
-	return err != sql.ErrNoRows
-}
-
 func (r *GenreRepository) GetByID(id int) (models.Genre, error) {
 	var genre models.Genre
 	query := "SELECT * FROM genre WHERE id = ?;"
