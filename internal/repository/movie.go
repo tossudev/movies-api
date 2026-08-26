@@ -19,7 +19,7 @@ func NewMovieRepository(db *sql.DB) *MovieRepository {
 
 func (r *MovieRepository) GetAll(page, size int, filters map[string]string) ([]models.Movie, error) {
 	clauses, args := "", []any{}
-	if size != 0 { // Checks whetever clauses exists or not, no other possibility of size being 0.
+	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
 		clauses = " LIMIT ? OFFSET ?"
 		args = []any{size, page*size - size}
 	}
