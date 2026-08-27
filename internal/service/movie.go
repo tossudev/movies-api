@@ -43,7 +43,16 @@ func (s *MovieService) Create(req dto.CreateMovieRequest) (models.Movie, error) 
 		return models.Movie{}, err
 	}
 
-	return models.Movie{ID: id, Title: req.Title, ReleaseYear: req.ReleaseYear, Duration: req.Duration}, nil
+	genres, err := s.repo.GetGenres(id)
+	if err != nil {
+		return models.Movie{}, err
+	}
+	actors, err := s.repo.GetActors(id)
+	if err != nil {
+		return models.Movie{}, err
+	}
+
+	return models.Movie{ID: id, Title: req.Title, ReleaseYear: req.ReleaseYear, Duration: req.Duration, Genres: genres, Actors: actors}, nil
 }
 
 func (s *MovieService) Update(id int, req dto.UpdateMovieRequest) error {
