@@ -144,15 +144,15 @@ func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	force := r.URL.Query().Get("force") == "true"
 	if err := h.service.Delete(id, force); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		switch {
+		case errors.Is(err, sql.ErrNoRows): // genre with id doesn't exist
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("genre not found"))
-		} else if errors.Is(err, service.ErrAssociatedMovies) {
-			response.WriteJSON(w, http.StatusConflict, dto.Conflict(err.Error()))
-		} else {
+		case errors.Is(err, service.ErrAssociatedMoviesGenre): // genre has associated movies
+			response.WriteJSON(w, http.StatusConflict, dto.Conflict("cannot delete genre because it has associated movies"))
+		default: // unexpected error
 			slog.ErrorContext(r.Context(), "failed to delete genre", "err", err)
 			response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to delete genre"))
 		}
-
 		return
 	}
 

@@ -3,14 +3,14 @@ package config
 import "os"
 
 type Config struct {
-	ServerPort   string
-	DatabasePath string
+	Port     string
+	Database string
 }
 
 func Load() Config {
 	cfg := Config{
-		ServerPort:   getEnv("SERVER_PORT", ":8080"),
-		DatabasePath: getEnv("DATABASE_PATH", "movies.db"),
+		Port:     getEnv("PORT", "8080"),
+		Database: getEnv("DATABASE", "./movies.db"),
 	}
 
 	return cfg

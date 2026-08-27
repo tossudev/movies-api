@@ -3,10 +3,10 @@ package handlers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
-	"fmt"
 
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
@@ -33,12 +33,14 @@ func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filters := make(map[string]string)
-	
+
 	for key, values := range r.URL.Query() {
 		value := strings.TrimSpace(values[0])
 		switch key {
 		case "genre", "actor", "year":
 			filters[key] = value
+		case "page", "size":
+			continue
 		default:
 			response.WriteJSON(w, http.StatusBadRequest, fmt.Sprintf("Invalid filter: %s", key))
 			return
@@ -111,7 +113,6 @@ func (h *MovieHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, http.StatusOK, toMovieResponse(movie))
 }
 
-
 func (h *MovieHandler) GetActors(w http.ResponseWriter, r *http.Request) {
 	id, err := getID(r)
 	if err != nil {
@@ -135,7 +136,6 @@ func (h *MovieHandler) GetActors(w http.ResponseWriter, r *http.Request) {
 
 	response.WriteJSON(w, http.StatusOK, res)
 }
-
 
 func (h *MovieHandler) Create(w http.ResponseWriter, r *http.Request) {
 	req, err := decodeRequest[dto.CreateMovieRequest](r)

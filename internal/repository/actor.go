@@ -20,11 +20,8 @@ func NewActorRepository(db *sql.DB) *ActorRepository {
 
 func (r *ActorRepository) GetAll(page, size int, filters map[string]string) ([]models.Actor, error) {
 	clauses, args := "", []any{}
-	if size != 0 { // Checks whetever pagination exists or not, no other possibility of size being 0.
-		clauses = " LIMIT ? OFFSET ?"
-		args = []any{size, (page - 1) * size}
-	}
 
+	// add filters to query
 	if value, ok := filters["name"]; ok {
 		clauses += " AND name = ? COLLATE NOCASE"
 		args = append(args, value)
@@ -33,11 +30,16 @@ func (r *ActorRepository) GetAll(page, size int, filters map[string]string) ([]m
 		clauses += " AND birth_date = ?"
 		args = append(args, value)
 	}
-
 	clauses = strings.Replace(clauses, "AND", "WHERE", 1)
 
-	rows, err := r.db.Query("SELECT * FROM actor"+clauses, args...)
+	// add pagination if exists, no other possibilities of size being 0.
+	if size != 0 {
+		clauses += " LIMIT ? OFFSET ?"
+		args = append(args, size)
+		args = append(args, (page-1)*size)
+	}
 
+	rows, err := r.db.Query("SELECT * FROM actor"+clauses, args...)
 	if err != nil {
 		return nil, fmt.Errorf("query actors: %w", err)
 	}
