@@ -55,8 +55,11 @@ func (s *MovieService) Create(req dto.CreateMovieRequest) (models.Movie, error) 
 	return models.Movie{ID: id, Title: req.Title, ReleaseYear: req.ReleaseYear, Duration: req.Duration, Genres: genres, Actors: actors}, nil
 }
 
-func (s *MovieService) Update(id int, req dto.UpdateMovieRequest) error {
-	return s.repo.Update(id, req)
+func (s *MovieService) Update(id int, req dto.UpdateMovieRequest) (models.Movie, error) {
+	if err := s.repo.Update(id, req); err != nil {
+		return models.Movie{}, err
+	}
+	return s.GetByID(id)
 }
 
 func (s *MovieService) Delete(id int, force bool) error {

@@ -129,7 +129,8 @@ func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Update(id, req); err != nil {
+	actor, err := h.service.Update(id, req)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor not found"))
 		} else {
@@ -139,7 +140,7 @@ func (h *ActorHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "successfully updated actor")
+	response.WriteJSON(w, http.StatusOK, toActorResponse(actor))
 }
 
 func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {

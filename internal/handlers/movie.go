@@ -193,7 +193,8 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Update(id, req); err != nil {
+	movie, err := h.service.Update(id, req)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("movie not found"))
 		} else {
@@ -203,7 +204,7 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "successfully updated movie")
+	response.WriteJSON(w, http.StatusOK, toMovieResponse(movie))
 }
 
 func (h *MovieHandler) Delete(w http.ResponseWriter, r *http.Request) {

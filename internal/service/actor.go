@@ -37,8 +37,13 @@ func (s *ActorService) Create(req dto.CreateActorRequest) (models.Actor, error) 
 	return models.Actor{ID: id, Name: req.Name, BirthDate: req.BirthDate}, nil
 }
 
-func (s *ActorService) Update(id int, req dto.UpdateActorRequest) error {
-	return s.repo.Update(id, req)
+func (s *ActorService) Update(id int, req dto.UpdateActorRequest) (models.Actor, error) {
+	err := s.repo.Update(id, req)
+	if err != nil {
+		return models.Actor{}, err
+	}
+
+	return s.GetByID(id)
 }
 
 func (s *ActorService) Delete(id int, force bool) error {
