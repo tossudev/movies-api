@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"fmt"
-	"strings"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"movies-api/internal/dto"
 	"movies-api/internal/models"
@@ -39,6 +39,8 @@ func (h *ActorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		switch key {
 		case "name", "birth_date":
 			filters[key] = value
+		case "page", "size":
+			continue
 		default:
 			response.WriteJSON(w, http.StatusBadRequest, fmt.Sprintf("Invalid filter: %s", key))
 			return
@@ -149,14 +151,16 @@ func (h *ActorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	force := r.URL.Query().Get("force") == "true"
 	if err := h.service.Delete(id, force); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		switch {
+		case errors.Is(err, sql.ErrNoRows): // actor with id doesn't exist
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor not found"))
-		} else if errors.Is(err, service.ErrAssociatedMoviesActor) {
+		case errors.Is(err, service.ErrAssociatedMoviesActor): // actor has associated movies
 			response.WriteJSON(w, http.StatusConflict, dto.Conflict("cannot delete actor because it has associated movies"))
-		} else {
+		default: // unexpected error
 			slog.ErrorContext(r.Context(), "failed to delete actor", "err", err)
 			response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to delete actor"))
 		}
+
 		return
 	}
 

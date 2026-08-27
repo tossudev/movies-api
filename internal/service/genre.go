@@ -9,7 +9,7 @@ import (
 	"movies-api/internal/repository"
 )
 
-var ErrAssociatedMovies = errors.New("genre has associated movies")
+var ErrAssociatedMoviesGenre = errors.New("genre has associated movies")
 
 type GenreService struct {
 	repo *repository.GenreRepository
@@ -47,7 +47,7 @@ func (s *GenreService) Delete(id int, force bool) error {
 		if movies, err := s.repo.GetMovies(id); err != nil {
 			return fmt.Errorf("query deleted genre's movies: %w", err)
 		} else if len(movies) > 0 {
-			return ErrAssociatedMovies
+			return ErrAssociatedMoviesGenre
 		}
 	}
 

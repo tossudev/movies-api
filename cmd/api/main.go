@@ -1,8 +1,10 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"movies-api/internal/config"
 	"movies-api/internal/db"
@@ -11,18 +13,24 @@ import (
 
 func main() {
 	cfg := config.Load()
-	database, err := db.Open(cfg.DatabasePath)
+	database, err := db.Open(cfg.Database)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("opening database", "err", err)
+		return
 	}
 	defer database.Close()
 
 	if err := db.Migrate(database); err != nil {
-		log.Fatal(err)
+		slog.Error("migrating database", "err", err)
+		return
 	}
 
-	handler := routes.New(database)
+	host, err := os.Hostname()
+	if err != nil {
+		slog.Error("fetching hostname", "err", err)
+		host = "localhost"
+	}
+	slog.Info("starting http server", "port", cfg.Port, "url", fmt.Sprintf("http://%s:%s/", host, cfg.Port))
 
-	log.Printf("Server listening on %s", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(cfg.ServerPort, handler))
+	slog.Error("starting server", "err", http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), routes.New(database)))
 }
