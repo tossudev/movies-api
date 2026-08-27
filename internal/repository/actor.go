@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -97,16 +96,10 @@ func (r *ActorRepository) Update(id int, req dto.UpdateActorRequest) error {
 		sets = append(sets, "name = ?")
 		args = append(args, *req.Name)
 	}
-
 	if req.BirthDate != nil {
 		sets = append(sets, "birth_date = ?")
 		args = append(args, *req.BirthDate)
 	}
-
-	if len(sets) == 0 {
-		return errors.New("no fields to update")
-	}
-
 	args = append(args, id)
 
 	query := "UPDATE actor SET " + strings.Join(sets, ", ") + " WHERE id = ?"

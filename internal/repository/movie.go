@@ -134,7 +134,7 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 	return movieID, nil
 }
 
-func (r *MovieRepository) Update(id int, req dto.UpdateMovieRequest) error {
+func (r *MovieRepository) Update(movieID int, req dto.UpdateMovieRequest) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("begin update movie transaction: %w", err)
@@ -148,62 +148,82 @@ func (r *MovieRepository) Update(id int, req dto.UpdateMovieRequest) error {
 		sets = append(sets, "title = ?")
 		args = append(args, *req.Title)
 	}
-
 	if req.ReleaseYear != nil {
 		sets = append(sets, "release_year = ?")
 		args = append(args, *req.ReleaseYear)
 	}
-
 	if req.Duration != nil {
 		sets = append(sets, "duration = ?")
 		args = append(args, *req.Duration)
 	}
 
-	if len(sets) == 0 {
-		return nil // or return an error
-	}
+	// Updating movie if applicable
+	if len(sets) > 0 {
+		args = append(args, movieID)
 
-	args = append(args, id)
-	query := "UPDATE movie SET " + strings.Join(sets, ", ") + " WHERE id = ?"
-
-	result, err := tx.Exec(query, args...)
-	if err != nil {
-		return fmt.Errorf("update movie: %w", err)
-	}
-
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("check updated movie rows: %w", err)
-	}
-	if rows == 0 {
-		return sql.ErrNoRows
-	}
-	movieID := id
-
-	for _, genreID := range req.GenreIDs {
-		if !r.GenreExists(genreID) {
-			return fmt.Errorf(IDNotFound, "genre", genreID)
+		query := "UPDATE movie SET " + strings.Join(sets, ", ") + " WHERE id = ?"
+		result, err := tx.Exec(query, args...)
+		if err != nil {
+			return fmt.Errorf("update movie: %w", err)
 		}
 
-		if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
-			return fmt.Errorf("create movie-genre relationship: %w", err)
+		rows, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("check updated movie rows: %w", err)
+		}
+		if rows == 0 {
+			return sql.ErrNoRows
 		}
 	}
 
-	for _, actorID := range req.ActorIDs {
-		if !r.ActorExists(actorID) {
-			return fmt.Errorf(IDNotFound, "actor", actorID)
+	// Updating genres if applicable
+	if req.GenreIDs != nil {
+		// Removing existing ones
+		if _, err := tx.Exec(
+			"DELETE FROM movie_genres WHERE movie_id = ?",
+			movieID,
+		); err != nil {
+			return fmt.Errorf("delete movie genres: %w", err)
 		}
 
-		if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {
-			return fmt.Errorf("create movie-actor relationship: %w", err)
+		// And adding wanted if applicable
+		for _, genreID := range req.GenreIDs {
+			if !r.GenreExists(genreID) {
+				return fmt.Errorf(IDNotFound, "genre", genreID)
+			}
+
+			if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
+				return fmt.Errorf("update movie-genre relationship: %w", err)
+			}
 		}
 	}
 
-	err = tx.Commit()
-	if err != nil {
+	// Updating actors if applicable
+	if req.ActorIDs != nil {
+		// Removing existing ones
+		if _, err := tx.Exec(
+			"DELETE FROM movie_actors WHERE movie_id = ?",
+			movieID,
+		); err != nil {
+			return fmt.Errorf("delete movie actors: %w", err)
+		}
+
+		// And adding wanted if applicable
+		for _, actorID := range req.ActorIDs {
+			if !r.ActorExists(actorID) {
+				return fmt.Errorf(IDNotFound, "actor", actorID)
+			}
+
+			if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {
+				return fmt.Errorf("update movie-actor relationship: %w", err)
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit movie update: %w", err)
 	}
+
 	return nil
 }
 

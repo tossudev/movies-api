@@ -81,16 +81,9 @@ func (r *GenreRepository) Update(id int, req dto.UpdateGenreRequest) error {
 		sets = append(sets, "name = ?")
 		args = append(args, *req.Name)
 	}
-
-	if len(sets) == 0 {
-		return nil // or return an error
-	}
-
 	args = append(args, id)
 
-	query := "UPDATE genre SET " +
-		strings.Join(sets, ", ") +
-		" WHERE id = ?"
+	query := "UPDATE genre SET " + strings.Join(sets, ", ") + " WHERE id = ?"
 
 	result, err := r.db.Exec(query, args...)
 	if err != nil {
@@ -126,17 +119,17 @@ func (r *GenreRepository) Delete(id int) error {
 }
 
 func (r *GenreRepository) CreateRelationship(genreID, movieID int) error {
-	query := "INSERT INTO movie_genres VALUES (?, ?)"
-	_, err := r.db.Exec(query, movieID, genreID)
-
-	return err
+	if _, err := r.db.Exec("INSERT INTO movie_actors VALUES (?, ?)", movieID, genreID); err != nil {
+		return fmt.Errorf("create movie-genre relationship: %w", err)
+	}
+	return nil
 }
 
 func (r *GenreRepository) DeleteRelationship(genreID, movieID int) error {
-	query := "DELETE FROM movie_genres WHERE movie_id = ? AND genre_id = ?"
-	_, err := r.db.Exec(query, movieID, genreID)
-
-	return err
+	if _, err := r.db.Exec("INSERT INTO movie_actors VALUES (?, ?)", movieID, genreID); err != nil {
+		return fmt.Errorf("delete movie-genre relationship: %w", err)
+	}
+	return nil
 }
 
 func (r *GenreRepository) GetMovies(genreID int) ([]models.Movie, error) {
