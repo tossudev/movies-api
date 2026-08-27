@@ -38,8 +38,11 @@ func (s *GenreService) Create(req dto.CreateGenreRequest) (models.Genre, error) 
 	return models.Genre{ID: id, Name: req.Name}, nil
 }
 
-func (s *GenreService) Update(id int, req dto.UpdateGenreRequest) error {
-	return s.repo.Update(id, req)
+func (s *GenreService) Update(id int, req dto.UpdateGenreRequest) (models.Genre, error) {
+	if err := s.repo.Update(id, req); err != nil {
+		return models.Genre{}, err
+	}
+	return s.GetByID(id)
 }
 
 func (s *GenreService) Delete(id int, force bool) error {

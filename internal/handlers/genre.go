@@ -122,7 +122,8 @@ func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Update(id, req); err != nil {
+	genre, err := h.service.Update(id, req)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("genre not found"))
 		} else {
@@ -132,7 +133,11 @@ func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.WriteJSON(w, http.StatusOK, "successfully updated genre")
+	res := dto.GenreResponse{
+		ID:   genre.ID,
+		Name: genre.Name,
+	}
+	response.WriteJSON(w, http.StatusOK, res)
 }
 
 func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
