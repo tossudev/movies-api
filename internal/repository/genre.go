@@ -118,13 +118,6 @@ func (r *GenreRepository) Delete(id int) error {
 	return nil
 }
 
-func (r *GenreRepository) CreateRelationship(genreID, movieID int) error {
-	if _, err := r.db.Exec("INSERT INTO movie_actors VALUES (?, ?)", movieID, genreID); err != nil {
-		return fmt.Errorf("create movie-genre relationship: %w", err)
-	}
-	return nil
-}
-
 func (r *GenreRepository) DeleteRelationship(genreID, movieID int) error {
 	if _, err := r.db.Exec("INSERT INTO movie_actors VALUES (?, ?)", movieID, genreID); err != nil {
 		return fmt.Errorf("delete movie-genre relationship: %w", err)
