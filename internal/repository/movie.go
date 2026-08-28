@@ -109,7 +109,7 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 
 	for _, genreID := range req.GenreIDs {
 		if !r.GenreExists(genreID) {
-			return 0, fmt.Errorf(IDNotFound, "genre", genreID)
+			return 0, dto.GenreNotExist
 		}
 
 		if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
@@ -119,7 +119,7 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 
 	for _, actorID := range req.ActorIDs {
 		if !r.ActorExists(actorID) {
-			return 0, fmt.Errorf(IDNotFound, "actor", actorID)
+			return 0, dto.ActorNotExist
 		}
 
 		if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {
@@ -189,7 +189,7 @@ func (r *MovieRepository) Update(movieID int, req dto.UpdateMovieRequest) error 
 		// And adding wanted if applicable
 		for _, genreID := range req.GenreIDs {
 			if !r.GenreExists(genreID) {
-				return fmt.Errorf(IDNotFound, "genre", genreID)
+				return dto.GenreNotExist
 			}
 
 			if _, err := tx.Exec("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)", movieID, genreID); err != nil {
@@ -211,7 +211,7 @@ func (r *MovieRepository) Update(movieID int, req dto.UpdateMovieRequest) error 
 		// And adding wanted if applicable
 		for _, actorID := range req.ActorIDs {
 			if !r.ActorExists(actorID) {
-				return fmt.Errorf(IDNotFound, "actor", actorID)
+				return dto.ActorNotExist
 			}
 
 			if _, err := tx.Exec("INSERT INTO movie_actors (movie_id, actor_id) VALUES (?, ?)", movieID, actorID); err != nil {

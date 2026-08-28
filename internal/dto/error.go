@@ -1,11 +1,17 @@
 package dto
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 type ErrorResponse struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`
 }
+
+var ActorNotExist = errors.New("actor does not exist")
+var GenreNotExist = errors.New("genre does not exist")
 
 func BadRequest(message string) *ErrorResponse {
 	return &ErrorResponse{
