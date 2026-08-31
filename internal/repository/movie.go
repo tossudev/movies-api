@@ -108,7 +108,11 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 	movieID := int(id64)
 
 	for _, genreID := range req.GenreIDs {
-		if !r.GenreExists(genreID) {
+		exists, err := r.GenreExists(genreID)
+		if err != nil {
+			return 0, fmt.Errorf("genre exists check: %w", err)
+		}
+		if !exists {
 			return 0, dto.GenreNotExist
 		}
 
@@ -118,7 +122,11 @@ func (r *MovieRepository) Create(req dto.CreateMovieRequest) (int, error) {
 	}
 
 	for _, actorID := range req.ActorIDs {
-		if !r.ActorExists(actorID) {
+		exists, err := r.ActorExists(actorID)
+		if err != nil {
+			return 0, fmt.Errorf("actor exists check: %w", err)
+		}
+		if !exists {
 			return 0, dto.ActorNotExist
 		}
 
@@ -188,7 +196,11 @@ func (r *MovieRepository) Update(movieID int, req dto.UpdateMovieRequest) error 
 
 		// And adding wanted if applicable
 		for _, genreID := range req.GenreIDs {
-			if !r.GenreExists(genreID) {
+			exists, err := r.GenreExists(genreID)
+			if err != nil {
+				return fmt.Errorf("genre exists check: %w", err)
+			}
+			if !exists {
 				return dto.GenreNotExist
 			}
 
@@ -210,7 +222,11 @@ func (r *MovieRepository) Update(movieID int, req dto.UpdateMovieRequest) error 
 
 		// And adding wanted if applicable
 		for _, actorID := range req.ActorIDs {
-			if !r.ActorExists(actorID) {
+			exists, err := r.ActorExists(actorID)
+			if err != nil {
+				return fmt.Errorf("actor exists check: %w", err)
+			}
+			if !exists {
 				return dto.ActorNotExist
 			}
 
@@ -288,12 +304,32 @@ func (r *MovieRepository) GetGenres(movieID int) ([]models.Genre, error) {
 	return genres, nil
 }
 
-func (r *MovieRepository) GenreExists(id int) bool {
-	return r.db.QueryRow("SELECT * FROM genre WHERE id = ?", id).Err() == nil
+func (r *MovieRepository) GenreExists(id int) (bool, error) {
+	var genre models.Genre
+	query := "SELECT * FROM genre WHERE id = ?"
+	err := r.db.QueryRow(query, id).Scan(&genre)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return false, err
+		}
+		return false, nil
+	}
+
+	return true, nil
 }
 
-func (r *MovieRepository) ActorExists(id int) bool {
-	return r.db.QueryRow("SELECT * FROM actor WHERE id = ?", id).Err() == nil
+func (r *MovieRepository) ActorExists(id int) (bool, error) {
+	var actor models.Actor
+	query := "SELECT * FROM actor WHERE id = ?"
+	err := r.db.QueryRow(query, id).Scan(&actor)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return false, err
+		}
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (r *MovieRepository) getMoviesFromRows(rows *sql.Rows) ([]models.Movie, error) {

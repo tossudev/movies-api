@@ -193,6 +193,12 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err = h.service.GetByID(id)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, dto.NotFound("movie does not exist"))
+		return
+	}
+
 	req, err := decodeRequest[dto.UpdateMovieRequest](r)
 	if err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("malformed json"))
