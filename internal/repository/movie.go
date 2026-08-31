@@ -77,12 +77,10 @@ func (r *MovieRepository) GetByID(id int) (models.Movie, error) {
 		return movie, fmt.Errorf("scan movie: %w", err)
 	}
 
-	movie.Actors, err = r.GetActors(movie.ID)
-	if err != nil {
+	if movie.Actors, err = r.GetActors(movie.ID); err != nil {
 		return movie, fmt.Errorf("get movie actors: %w", err)
 	}
-	movie.Genres, err = r.GetGenres(movie.ID)
-	if err != nil {
+	if movie.Genres, err = r.GetGenres(movie.ID); err != nil {
 		return movie, fmt.Errorf("get movie genres: %w", err)
 	}
 

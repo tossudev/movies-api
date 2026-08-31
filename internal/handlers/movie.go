@@ -147,6 +147,35 @@ func (h *MovieHandler) GetActors(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, http.StatusOK, res)
 }
 
+func (h *MovieHandler) GetGenres(w http.ResponseWriter, r *http.Request) {
+	id, err := getID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest(err.Error()))
+		return
+	}
+
+	genres, err := h.service.GetGenres(id)
+
+	if err != nil {
+		slog.ErrorContext(r.Context(), "failed to retrieve genres", "err", err)
+		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve genres"))
+		return
+	}
+
+	res := make([]dto.GenreResponse, 0, len(genres))
+
+	for _, genre := range genres {
+		res = append(res, toGenreResponse(genre))
+	}
+
+	if len(genres) == 0 {
+		response.WriteJSON(w, http.StatusNotFound, dto.NotFound("no genres found"))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, res)
+}
+
 func (h *MovieHandler) Create(w http.ResponseWriter, r *http.Request) {
 	req, err := decodeRequest[dto.CreateMovieRequest](r)
 	if err != nil {
@@ -193,8 +222,7 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.service.GetByID(id)
-	if err != nil {
+	if _, err := h.service.GetByID(id); err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, dto.NotFound("movie does not exist"))
 		return
 	}

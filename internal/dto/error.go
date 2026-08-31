@@ -10,8 +10,10 @@ type ErrorResponse struct {
 	Code    int    `json:"code"`
 }
 
-var ActorNotExist = errors.New("actor does not exist")
-var GenreNotExist = errors.New("genre does not exist")
+var (
+	ActorNotExist = errors.New("actor does not exist")
+	GenreNotExist = errors.New("genre does not exist")
+)
 
 func BadRequest(message string) *ErrorResponse {
 	return &ErrorResponse{
