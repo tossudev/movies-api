@@ -137,13 +137,6 @@ func (r *ActorRepository) Delete(id int) error {
 	return nil
 }
 
-func (r *ActorRepository) CreateRelationship(actorID, movieID int) error {
-	if _, err := r.db.Exec("INSERT INTO movie_actors VALUES (?, ?)", movieID, actorID); err != nil {
-		return fmt.Errorf("create movie-actor relationship: %w", err)
-	}
-	return nil
-}
-
 func (r *ActorRepository) DeleteRelationship(actorID, movieID int) error {
 	if _, err := r.db.Exec("DELETE FROM movie_actors WHERE movie_id = ? AND actor_id = ?", movieID, actorID); err != nil {
 		return fmt.Errorf("delete movie-actor relationship: %w", err)
