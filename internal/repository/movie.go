@@ -307,7 +307,7 @@ func (r *MovieRepository) GetGenres(movieID int) ([]models.Genre, error) {
 func (r *MovieRepository) GenreExists(id int) (bool, error) {
 	var genre models.Genre
 	query := "SELECT * FROM genre WHERE id = ?"
-	err := r.db.QueryRow(query, id).Scan(&genre)
+	err := r.db.QueryRow(query, id).Scan(&genre.ID, &genre.Name)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return false, err
@@ -321,7 +321,7 @@ func (r *MovieRepository) GenreExists(id int) (bool, error) {
 func (r *MovieRepository) ActorExists(id int) (bool, error) {
 	var actor models.Actor
 	query := "SELECT * FROM actor WHERE id = ?"
-	err := r.db.QueryRow(query, id).Scan(&actor)
+	err := r.db.QueryRow(query, id).Scan(&actor.ID, &actor.Name, &actor.BirthDate)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return false, err
