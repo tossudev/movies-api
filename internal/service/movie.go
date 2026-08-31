@@ -37,6 +37,10 @@ func (s *MovieService) GetActors(id int) ([]models.Actor, error) {
 	return s.repo.GetActors(id)
 }
 
+func (s *MovieService) GetGenres(id int) ([]models.Genre, error) {
+	return s.repo.GetGenres(id)
+}
+
 func (s *MovieService) Create(req dto.CreateMovieRequest) (models.Movie, error) {
 	id, err := s.repo.Create(req)
 	if err != nil {

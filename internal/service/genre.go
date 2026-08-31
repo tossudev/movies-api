@@ -29,6 +29,10 @@ func (s *GenreService) GetByID(id int) (models.Genre, error) {
 	return s.repo.GetByID(id)
 }
 
+func (s *GenreService) GetMovies(id int) ([]models.Movie, error) {
+	return s.repo.GetMovies(id)
+}
+
 func (s *GenreService) Create(req dto.CreateGenreRequest) (models.Genre, error) {
 	id, err := s.repo.Create(req)
 	if err != nil {

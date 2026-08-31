@@ -84,6 +84,35 @@ func (h *ActorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSON(w, http.StatusOK, toActorResponse(actor))
 }
 
+func (h *ActorHandler) GetMovies(w http.ResponseWriter, r *http.Request) {
+	id, err := getID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest(err.Error()))
+		return
+	}
+
+	movies, err := h.service.GetMovies(id)
+
+	if err != nil {
+		slog.ErrorContext(r.Context(), "failed to retrieve movies", "err", err)
+		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve movies"))
+		return
+	}
+
+	res := make([]dto.MovieResponse, 0, len(movies))
+
+	for _, movie := range movies {
+		res = append(res, toMovieResponse(movie))
+	}
+
+	if len(movies) == 0 {
+		response.WriteJSON(w, http.StatusNotFound, dto.NotFound("no movies found"))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, res)
+}
+
 func (h *ActorHandler) Create(w http.ResponseWriter, r *http.Request) {
 	req, err := decodeRequest[dto.CreateActorRequest](r)
 	if err != nil {

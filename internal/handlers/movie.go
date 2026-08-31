@@ -61,6 +61,11 @@ func (h *MovieHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		res = append(res, toMovieResponse(movie))
 	}
 
+	if len(movies) == 0 {
+		response.WriteJSON(w, http.StatusNotFound, dto.NotFound("no movies found"))
+		return
+	}
+
 	response.WriteJSON(w, http.StatusOK, res)
 }
 
@@ -134,6 +139,40 @@ func (h *MovieHandler) GetActors(w http.ResponseWriter, r *http.Request) {
 		res = append(res, toActorResponse(actor))
 	}
 
+	if len(actors) == 0 {
+		response.WriteJSON(w, http.StatusNotFound, dto.NotFound("no actors found"))
+		return
+	}
+
+	response.WriteJSON(w, http.StatusOK, res)
+}
+
+func (h *MovieHandler) GetGenres(w http.ResponseWriter, r *http.Request) {
+	id, err := getID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest(err.Error()))
+		return
+	}
+
+	genres, err := h.service.GetGenres(id)
+
+	if err != nil {
+		slog.ErrorContext(r.Context(), "failed to retrieve genres", "err", err)
+		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve genres"))
+		return
+	}
+
+	res := make([]dto.GenreResponse, 0, len(genres))
+
+	for _, genre := range genres {
+		res = append(res, toGenreResponse(genre))
+	}
+
+	if len(genres) == 0 {
+		response.WriteJSON(w, http.StatusNotFound, dto.NotFound("no genres found"))
+		return
+	}
+
 	response.WriteJSON(w, http.StatusOK, res)
 }
 
@@ -151,8 +190,14 @@ func (h *MovieHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	movie, err := h.service.Create(req)
 	if err != nil {
-		slog.ErrorContext(r.Context(), "failed to create movie", "err", err)
-		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed creating movie"))
+		if errors.Is(err, dto.ActorNotExist) {
+			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor does not exist"))
+		} else if errors.Is(err, dto.GenreNotExist) {
+			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("genre does not exist"))
+		} else {
+			slog.ErrorContext(r.Context(), "failed to create movie", "err", err)
+			response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed creating movie"))
+		}
 		return
 	}
 
@@ -177,6 +222,11 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, err := h.service.GetByID(id); err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, dto.NotFound("movie does not exist"))
+		return
+	}
+
 	req, err := decodeRequest[dto.UpdateMovieRequest](r)
 	if err != nil {
 		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest("malformed json"))
@@ -195,7 +245,11 @@ func (h *MovieHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	movie, err := h.service.Update(id, req)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, dto.ActorNotExist) {
+			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("actor does not exist"))
+		} else if errors.Is(err, dto.GenreNotExist) {
+			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("genre does not exist"))
+		} else if errors.Is(err, sql.ErrNoRows) {
 			response.WriteJSON(w, http.StatusNotFound, dto.NotFound("movie not found"))
 		} else {
 			slog.ErrorContext(r.Context(), "failed to update movie", "err", err)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"movies-api/internal/dto"
+	"movies-api/internal/models"
 	"movies-api/internal/response"
 	"movies-api/internal/service"
 
@@ -39,10 +40,7 @@ func (h *GenreHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	res := make([]dto.GenreResponse, 0, len(genres))
 
 	for _, genre := range genres {
-		res = append(res, dto.GenreResponse{
-			ID:   genre.ID,
-			Name: genre.Name,
-		})
+		res = append(res, toGenreResponse(genre))
 	}
 
 	response.WriteJSON(w, http.StatusOK, res)
@@ -66,9 +64,34 @@ func (h *GenreHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := dto.GenreResponse{
-		ID:   genre.ID,
-		Name: genre.Name,
+	res := toGenreResponse(genre)
+	response.WriteJSON(w, http.StatusOK, res)
+}
+
+func (h *GenreHandler) GetMovies(w http.ResponseWriter, r *http.Request) {
+	id, err := getID(r)
+	if err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, dto.BadRequest(err.Error()))
+		return
+	}
+
+	movies, err := h.service.GetMovies(id)
+
+	if err != nil {
+		slog.ErrorContext(r.Context(), "failed to retrieve movies", "err", err)
+		response.WriteJSON(w, http.StatusInternalServerError, dto.InternalServerError("failed to retrieve movies"))
+		return
+	}
+
+	res := make([]dto.MovieResponse, 0, len(movies))
+
+	for _, movie := range movies {
+		res = append(res, toMovieResponse(movie))
+	}
+
+	if len(movies) == 0 {
+		response.WriteJSON(w, http.StatusNotFound, dto.NotFound("no movies found"))
+		return
 	}
 
 	response.WriteJSON(w, http.StatusOK, res)
@@ -93,10 +116,7 @@ func (h *GenreHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.WriteJSON(w, http.StatusCreated, dto.GenreResponse{
-		ID:   genre.ID,
-		Name: genre.Name,
-	})
+	response.WriteJSON(w, http.StatusCreated, toGenreResponse(genre))
 }
 
 func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -133,11 +153,7 @@ func (h *GenreHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := dto.GenreResponse{
-		ID:   genre.ID,
-		Name: genre.Name,
-	}
-	response.WriteJSON(w, http.StatusOK, res)
+	response.WriteJSON(w, http.StatusOK, toGenreResponse(genre))
 }
 
 func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -162,4 +178,11 @@ func (h *GenreHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func toGenreResponse(model models.Genre) dto.GenreResponse {
+	return dto.GenreResponse{
+		ID:   model.ID,
+		Name: model.Name,
+	}
 }
