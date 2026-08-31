@@ -17,7 +17,7 @@
 
 !*.md
 !*.sql
-!postman/*.postman_collection.json
+!postman/*.json
 
 !LICENSE
 !Makefile
